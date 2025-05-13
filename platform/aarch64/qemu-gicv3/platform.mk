@@ -1,4 +1,5 @@
 QEMU := qemu-system-aarch64
+OBJCOPY := /home/b/.rustup/toolchains/nightly-2023-12-28-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-objcopy
 
 UBOOT := $(image_dir)/bootloader/u-boot-atf.bin
 zone0_dtb := $(image_dir)/dts/zone0.dtb

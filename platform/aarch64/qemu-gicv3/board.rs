@@ -81,6 +81,17 @@ pub const ROOT_PCI_CONFIG: HvPciConfig = HvPciConfig {
     pci_mem64_base: 0x8000000000,
 };
 
-pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];
-
+// pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];
+pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 1] = [
+    HvIvcConfig {
+        ivc_id: 0,
+        peer_id: 0,
+        control_table_ipa: 0xd0000000,
+        shared_mem_ipa: 0xd0001000,
+        rw_sec_size: 0,
+        out_sec_size: 0x1000,
+        interrupt_num: 65,
+        max_peers: 2,
+    },
+];
 pub const ROOT_PCI_DEVS: [u64; 2] = [0, 1 << 3];

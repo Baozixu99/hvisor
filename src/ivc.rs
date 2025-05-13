@@ -82,6 +82,12 @@ fn insert_ivc_record(ivc_config: &HvIvcConfig, zone_id: u32) -> Result<(bool, us
             || rec.rw_sec_size != ivc_config.rw_sec_size
             || rec.out_sec_size != ivc_config.out_sec_size
         {
+            println!("rec.max_peers:{}", rec.max_peers);
+            println!("ivc_config.max_peers:{}", ivc_config.max_peers);
+            println!("rec.rw_sec_size:{}", rec.rw_sec_size);
+            println!("ivc_config.rw_sec_size:{}", ivc_config.rw_sec_size);
+            println!("rec.out_sec_size:{}", rec.out_sec_size);
+            println!("ivc_config.out_sec_size:{}", ivc_config.out_sec_size);
             error!("ivc config conflicts!!!");
             return Err(());
         }
@@ -237,6 +243,7 @@ pub fn mmio_ivc_handler(mmio: &mut MMIOAccess, base: usize) -> HvResult {
             peer_id as usize
         }
         CT_IPI_INVOKE if is_write => {
+            println!("###zone {} send ipi to {}", zone_id, mmio.value);
             let peer_id = mmio.value as u32;
             let irq_num = match rec.peer_infos.get(&peer_id) {
                 Some(info) => info.irq_num,
