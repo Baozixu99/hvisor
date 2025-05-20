@@ -344,7 +344,6 @@
 		reg = <0x0 0xa003e00 0x0 0x200>;
 		compatible = "virtio,mmio";
 	};
-
 	chosen {
 		bootargs = "clk_ignore_unused earlycon console=ttyAMA0 root=/dev/vda iomem=relaxed rw";
         // bootargs = "root=/dev/vda mem=768M";
