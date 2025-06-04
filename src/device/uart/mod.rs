@@ -20,6 +20,11 @@ mod pl011;
 #[cfg(all(feature = "pl011", target_arch = "aarch64"))]
 pub use pl011::{console_getchar, console_putchar};
 
+#[cfg(all(feature = "phytium_pi", target_arch = "aarch64"))]
+mod phytium_pi;
+#[cfg(all(feature = "phytium_pi", target_arch = "aarch64"))]
+pub use phytium_pi::{console_getchar, console_putchar};
+
 #[cfg(all(feature = "imx_uart", target_arch = "aarch64"))]
 mod imx_uart;
 #[cfg(all(feature = "imx_uart", target_arch = "aarch64"))]

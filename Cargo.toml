@@ -63,7 +63,7 @@ pl011 = []
 xuartps = []
 imx_uart = []
 uart_16550 = []
-
+phytium_pi = []
 # pagetable layout
 pt_layout_qemu = []
 pt_layout_rk3568 = []
