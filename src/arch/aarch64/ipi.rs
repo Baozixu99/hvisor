@@ -33,19 +33,47 @@ pub fn arch_send_event(cpu_id: u64, sgi_num: u64) {
         */
         let aff3: u64 = 0 << 48;
         let aff2: u64 = 0 << 32;
-        let aff1: u64;
-        let target_list: u64;
-
-        if cfg!(feature = "mpidr_rockchip") {
+        let mut aff1: u64;
+        let mut target_list: u64;
+        let irm: u64 = 0 << 40;
+        let sgi_id: u64 = sgi_num << 24;
+    
+        #[cfg(feature = "mpidr_rockchip")]
+        {
             aff1 = cpu_id << 16;
-            target_list = 1 << 0;
-        } else {
+            target_list = 1 << 0;  
+        }
+    
+        #[cfg(feature = "mpidr_phytium")]
+        {
+            match cpu_id {
+                0 => {
+                    aff1 = 0x02 << 16;
+                    target_list = 1 << 0;
+                }
+                1 => {
+                    aff1 = 0x02 << 16;
+                    target_list = 1 << 1;
+                }
+                2 => {
+                    aff1 = 0x00 << 16;
+                    target_list = 1 << 2;
+                }
+                3 => {
+                    aff1 = 0x01 << 16;
+                    target_list = 1 << 3;
+                }
+                _ => panic!("Unsupported cpu_id: {}", cpu_id),
+            }
+        }
+    
+        #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium")))]
+        {
             aff1 = 0 << 16;
             target_list = 1 << cpu_id;
         }
-        let irm: u64 = 0 << 40;
-        let sgi_id: u64 = sgi_num << 24;
-        let val: u64 = aff1 | aff2 | aff3 | irm | sgi_id | target_list;
+    
+        let val: u64 = aff3 | aff2 | aff1 | irm | sgi_id | target_list;
         write_sysreg!(icc_sgi1r_el1, val);
         debug!("write sgi sys value = {:#x}", val);
     }

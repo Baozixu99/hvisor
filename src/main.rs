@@ -243,11 +243,11 @@ fn rust_main(cpuid: usize, host_dtb: usize) {
         }
         wakeup_secondary_cpus(cpu.id, host_dtb, ncpu);
     }
-
+    
     ENTERED_CPUS.fetch_add(1, Ordering::SeqCst);
     wait_for(|| PerCpu::entered_cpus() < ncpu as _);
     assert_eq!(PerCpu::entered_cpus(), ncpu as _);
-
+    
     println!(
         "{} CPU {} has entered.",
         if is_primary { "Primary" } else { "Secondary" },

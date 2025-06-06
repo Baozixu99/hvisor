@@ -71,7 +71,7 @@ pt_layout_rk3588 = []
 
 # cpu
 mpidr_rockchip = []
-
+mpidr_phytium = []
 # uart infos
 uart_base_rk3568 = []
 uart_base_rk3588 = []

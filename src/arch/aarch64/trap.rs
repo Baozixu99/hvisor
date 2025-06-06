@@ -84,7 +84,8 @@ pub mod PsciFnId {
     pub const PSCI_FEATURES: u64 = 0x8400000a;
 
     pub const PSCI_CPU_SUSPEND_64: u64 = 0xc4000001;
-    pub const PSCI_CPU_OFF_64: u64 = 0xc4000002;
+    // pub const PSCI_CPU_OFF_64: u64 = 0xc4000002;
+    pub const PSCI_CPU_OFF_64: u64 = 0x84000002;
     pub const PSCI_CPU_ON_64: u64 = 0xc4000003;
     pub const PSCI_AFFINITY_INFO_64: u64 = 0xc4000004;
 }
@@ -341,7 +342,7 @@ fn psci_emulate_cpu_on(regs: &mut GeneralRegisters) -> u64 {
     // Todo: Check if `cpu` is in the cpuset of current zone
     let cpu = mpidr_to_cpuid(regs.usr[1]);
     info!("psci: try to wake up cpu {}", cpu);
-
+    println!("psci: try to wake up cpu {}", cpu);
     let target_data = get_cpu_data(cpu as _);
     let _lock = target_data.ctrl_lock.lock();
 
@@ -365,6 +366,7 @@ fn handle_psci_smc(
     _arg1: u64,
     _arg2: u64,
 ) -> u64 {
+    println!("psci smc call: code={:#x?}, arg0={:#x?}", code, arg0);
     match code {
         PsciFnId::PSCI_VERSION => PSCI_VERSION_1_1,
         PsciFnId::PSCI_CPU_SUSPEND_32 | PsciFnId::PSCI_CPU_SUSPEND_64 => {

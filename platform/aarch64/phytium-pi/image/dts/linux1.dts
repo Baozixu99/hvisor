@@ -83,21 +83,6 @@
 		phandle = <0x19>;
 
 		cpu-map {
-
-			cluster0 {
-
-				core0 {
-					cpu = <0x05>;
-				};
-			};
-
-			cluster1 {
-
-				core0 {
-					cpu = <0x06>;
-				};
-			};
-
 			cluster2 {
 
 				core0 {
@@ -130,25 +115,6 @@
 			phandle = <0x08>;
 		};
 
-		cpu@100 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x00>;
-			enable-method = "psci";
-			clocks = <0x09 0x00>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x05>;
-		};
-
-		cpu@101 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x100>;
-			enable-method = "psci";
-			clocks = <0x09 0x01>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x06>;
-		};
 	};
 
 	interrupt-controller@30800000 {
@@ -1371,7 +1337,7 @@
 
 	memory@80000000 {
 		device_type = "memory";
-		reg = <0x0 0x80000000 0x00 0x40000000>;
+		reg = <0x0 0x80000000 0x00 0x50000000>;
 	};
 
 	leds {
@@ -1409,8 +1375,6 @@
 		cpu = "/cpus";
 		cpu_l0 = "/cpus/cpu@0";
 		cpu_l1 = "/cpus/cpu@1";
-		cpu_b0 = "/cpus/cpu@100";
-		cpu_b1 = "/cpus/cpu@101";
 		gic = "/interrupt-controller@30800000";
 		its = "/interrupt-controller@30800000/gic-its@30820000";
 		sysclk_48mhz = "/clocks/clk48mhz";

@@ -32,12 +32,37 @@ use super::{
 };
 
 pub fn cpu_start(cpuid: usize, start_addr: usize, opaque: usize) {
-    psci::cpu_on(cpuid as u64 | 0x80000000, start_addr as _, opaque as _).unwrap_or_else(|err| {
-        if let psci::error::Error::AlreadyOn = err {
-        } else {
-            panic!("can't wake up cpu {}", cpuid);
-        }
-    });
+    if cfg!(feature = "mpidr_phytium") {
+        let new_cpuid = match cpuid {
+            1 => {
+                0x201 
+            }
+            2 => {
+                0x00
+            }
+            3 => {
+                0x100
+            }
+            _ => {
+                panic!("Invalid cpuid: {}", cpuid);
+            }
+        };
+        psci::cpu_on(new_cpuid as u64, start_addr as _, opaque as _).unwrap_or_else(|err| {
+            println!("psci cpu_on failed: {:?}", err);
+            if let psci::error::Error::AlreadyOn = err {
+            } else {
+                panic!("can't wake up cpu {}", cpuid);
+            }
+        })
+    } else {
+        psci::cpu_on(cpuid as u64 | 0x80000000, start_addr as _, opaque as _).unwrap_or_else(|err| {
+            println!("psci cpu_on failed: {:?}", err);
+            if let psci::error::Error::AlreadyOn = err {
+            } else {
+                panic!("can't wake up cpu {}", cpuid);
+            }
+        })
+    }   
 }
 
 #[repr(C)]
@@ -211,14 +236,35 @@ impl ArchCpu {
     }
 }
 
+// pub fn mpidr_to_cpuid(mpidr: u64) -> u64 {
+//     if cfg!(feature = "mpidr_rockchip") {
+//         (mpidr >> 8) & 0xff
+//     } else {
+//         mpidr & 0xff00ffffff
+//     }
+// }
 pub fn mpidr_to_cpuid(mpidr: u64) -> u64 {
-    if cfg!(feature = "mpidr_rockchip") {
+    #[cfg(feature = "mpidr_rockchip")]
+    {
         (mpidr >> 8) & 0xff
-    } else {
+    }
+
+    #[cfg(feature = "mpidr_phytium")]
+    {
+        match (mpidr & 0xffff) as u32 {
+            0x00 => 2,
+            0x100 => 3,
+            0x200 => 0,
+            0x201 => 1,
+            _ => panic!("Unknown MPIDR: {:#x}", mpidr),
+        }
+    }
+
+    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium")))]
+    {
         mpidr & 0xff00ffffff
     }
 }
-
 pub fn this_cpu_id() -> usize {
     mpidr_to_cpuid(MPIDR_EL1.get()) as _
 }

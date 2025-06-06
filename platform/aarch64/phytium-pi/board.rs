@@ -15,7 +15,7 @@
 //
 use crate::{arch::zone::HvArchZoneConfig, config::*};
 
-pub const BOARD_NAME: &str = "imx8mp";
+pub const BOARD_NAME: &str = "phytium-pi";
 
 pub const BOARD_NCPUS: usize = 4;
 
@@ -26,55 +26,49 @@ pub const ROOT_ZONE_CPUS: u64 = (1 << 0) | (1 << 1);
 
 pub const ROOT_ZONE_NAME: &str = "root-linux";
 
-pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 8] = [
+pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 6] = [
+    // ram
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_RAM,
-        physical_start: 0x50000000,
-        virtual_start: 0x50000000,
-        size: 0x80000000,
-    }, // ram
+        physical_start: 0x80000000,
+        virtual_start: 0x80000000,
+        size: 0x50000000,
+    }, 
+    // soc@0
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x30000000,
-        virtual_start: 0x30000000,
-        size: 0x400000,
-    }, // bus@30000000
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x30c00000,
-        virtual_start: 0x30c00000,
-        size: 0x400000,
+        physical_start: 0x28000000,  
+        virtual_start: 0x28000000,
+        size: 0x00100000,           
     },
+    // GIC
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x30800000,
+        physical_start: 0x30800000,  
         virtual_start: 0x30800000,
-        size: 0x400000,
+        size: 0x00200000,           // 2MB (GICD/GICR)
     },
+    // ethernet
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x38000000,
-        virtual_start: 0x38000000,
-        size: 0x8000,
+        physical_start: 0x3200c000,  
+        virtual_start: 0x3200c000,
+        size: 0x00002000,            // 8KB
     },
+    // USB
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x38008000,
-        virtual_start: 0x38008000,
-        size: 0x8000,
+        physical_start: 0x31800000,  // usb2@31800000
+        virtual_start: 0x31800000,
+        size: 0x00080000,            // 512KB
     },
+    // PCIe
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x38500000,
-        virtual_start: 0x38500000,
-        size: 0x20000,
-    },
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x32c00000,
-        virtual_start: 0x32c00000,
-        size: 0x400000,
-    }, // hdmi
+        physical_start: 0x40000000,  // pcie@40000000
+        virtual_start: 0x40000000,
+        size: 0x10000000,            // 256MB
+    }
        // bus@30800000
        // HvConfigMemoryRegion {
        //     mem_type: MEM_TYPE_IO,
@@ -83,10 +77,9 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 8] = [
        //     size: 0x1000,
        // }, // serial
 ];
-
-pub const ROOT_ZONE_IRQS: [u32; 28] = [
-    35, 36, 37, 38, 45, 52, 55, 56, 57, 59, 64, 67, 75, 96, 97, 98, 99, 100, 101, 102, 103, 104,
-    105, 135, 150, 151, 152, 162,
+//46-usb2,64-usb2,87-net,104、105-mmc,116-uart,133、138-i2c,191-spi
+pub const ROOT_ZONE_IRQS: [u32; 9] = [
+    46, 64, 87, 104, 105, 116, 133, 138, 191
 ];
 
 pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {

@@ -114,7 +114,7 @@ pub unsafe extern "C" fn boot_cpuid_get() {
     )
 }
 
-#[cfg(not(feature = "mpidr_rockchip"))]
+#[cfg(not(any(feature = "mpidr_rockchip",feature = "mpidr_phytium")))]
 #[naked]
 #[no_mangle]
 pub unsafe extern "C" fn boot_cpuid_get() {
@@ -126,6 +126,40 @@ pub unsafe extern "C" fn boot_cpuid_get() {
     ",
         options(noreturn)
     )
+}
+
+#[cfg(feature = "mpidr_phytium")]
+#[naked]
+#[no_mangle]
+pub unsafe extern "C" fn boot_cpuid_get() {
+    core::arch::asm!(
+        "
+        mrs x17, mpidr_el1
+        and x17, x17, #0xffff   // low 16位
+        
+        
+        cmp x17, #0x200         // cpu0
+        b.eq 3f
+        cmp x17, #0x201         // cpu1
+        b.eq 4f
+        
+        // 再检查其他核心
+        cmp x17, #0x00          // cpu2
+        b.eq 1f
+        cmp x17, #0x100         // cpu3
+        b.eq 2f
+        
+        mov x17, #-1            // unknown CPU
+        b 5f
+        
+    1:  mov x17, #2; b 5f        // back 2
+    2:  mov x17, #3; b 5f        // back 3
+    3:  mov x17, #0; b 5f        // back 0
+    4:  mov x17, #1              // back 1
+    5:  ret
+        ",
+        options(noreturn)
+    );
 }
 
 #[naked]
