@@ -84,8 +84,7 @@ pub mod PsciFnId {
     pub const PSCI_FEATURES: u64 = 0x8400000a;
 
     pub const PSCI_CPU_SUSPEND_64: u64 = 0xc4000001;
-    // pub const PSCI_CPU_OFF_64: u64 = 0xc4000002;
-    pub const PSCI_CPU_OFF_64: u64 = 0x84000002;
+    pub const PSCI_CPU_OFF_64: u64 = 0xc4000002;
     pub const PSCI_CPU_ON_64: u64 = 0xc4000003;
     pub const PSCI_AFFINITY_INFO_64: u64 = 0xc4000004;
 }
