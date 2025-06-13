@@ -26,7 +26,7 @@ pub const ROOT_ZONE_CPUS: u64 = (1 << 0) | (1 << 1);
 
 pub const ROOT_ZONE_NAME: &str = "root-linux";
 
-pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 6] = [
+pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
     // ram
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_RAM,
@@ -40,6 +40,13 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 6] = [
         physical_start: 0x28000000,  
         virtual_start: 0x28000000,
         size: 0x00100000,           
+    },
+    //iommu
+    HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x30000000,  
+        virtual_start: 0x30000000,
+        size: 0x800000,           
     },
     // GIC
     HvConfigMemoryRegion {
@@ -55,6 +62,24 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 6] = [
         virtual_start: 0x3200c000,
         size: 0x00002000,            // 8KB
     },
+    HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x3200e000, 
+        virtual_start: 0x3200e000,
+        size: 0x00002000,        // 8KB (对应 ethernet@3200e000)
+    },
+    HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x32010000, 
+        virtual_start: 0x32010000,
+        size: 0x00002000,        // 8KB (对应 ethernet@32010000)
+    },
+    HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x32012000, 
+        virtual_start: 0x32012000,
+        size: 0x00002000,        // 8KB (对应 ethernet@32012000)
+    },
     // USB
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
@@ -62,13 +87,27 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 6] = [
         virtual_start: 0x31800000,
         size: 0x00080000,            // 512KB
     },
-    // PCIe
+    //mailbox
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x40000000,  // pcie@40000000
-        virtual_start: 0x40000000,
-        size: 0x10000000,            // 256MB
+        physical_start: 0x32a00000,  
+        virtual_start: 0x32a00000,
+        size: 0x1000,           
+    },
+    //sram
+    HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x32a10000,  
+        virtual_start: 0x32a10000,
+        size: 0x2000,           
     }
+    // // PCIe
+    // HvConfigMemoryRegion {
+    //     mem_type: MEM_TYPE_IO,
+    //     physical_start: 0x40000000,  // pcie@40000000
+    //     virtual_start: 0x40000000,
+    //     size: 0x10000000,            // 256MB
+    // }
        // bus@30800000
        // HvConfigMemoryRegion {
        //     mem_type: MEM_TYPE_IO,

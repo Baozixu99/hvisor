@@ -937,7 +937,7 @@
 			compatible = "phytium,usb2";
 			reg = <0x00 0x31800000 0x00 0x80000 0x00 0x31990000 0x00 0x10000>;
 			interrupts = <0x00 0x20 0x04>;
-			status = "okay";
+			status = "disabled";
 			dr_mode = "host";
 			phandle = <0x5d>;
 		};
@@ -964,7 +964,7 @@
 			compatible = "phytium,usb2";
 			reg = <0x00 0x32800000 0x00 0x40000 0x00 0x32880000 0x00 0x40000>;
 			interrupts = <0x00 0x0e 0x04>;
-			status = "okay";
+			status = "disabled";
 			dr_mode = "host";
 			phandle = <0x60>;
 		};
@@ -973,21 +973,21 @@
 			compatible = "phytium,usb2";
 			reg = <0x00 0x32840000 0x00 0x40000 0x00 0x328c0000 0x00 0x40000>;
 			interrupts = <0x00 0x0f 0x04>;
-			status = "okay";
+			status = "disabled";
 			dr_mode = "host";
 			phandle = <0x61>;
 		};
-
+		//数字控制器，用于连接和控制显示器
 		dc@32000000 {
 			compatible = "phytium,dc";
 			reg = <0x00 0x32000000 0x00 0x8000>;
 			interrupts = <0x00 0x2c 0x04>;
-			status = "okay";
+			status = "disabled";
 			pipe_mask = [01];
 			edp_mask = [00];
 			phandle = <0x62>;
 		};
-
+		//用于数字音频数据传输
 		i2s_dp0@32009000 {
 			compatible = "phytium,i2s";
 			reg = <0x00 0x32009000 0x00 0x1000 0x00 0x32008000 0x00 0x1000>;
@@ -995,7 +995,7 @@
 			clocks = <0x0e>;
 			clock-names = "i2s_clk";
 			dai-name = "phytium-i2s-dp0";
-			status = "okay";
+			status = "disabled";
 			phandle = <0x63>;
 		};
 
@@ -1009,10 +1009,10 @@
 			status = "disabled";
 			phandle = <0x64>;
 		};
-
+		//和显示端口相关的设备，可能用于连接显示器或其他显示设备
 		pmdk_dp {
 			compatible = "phytium,pmdk-dp";
-			status = "okay";
+			status = "disabled";
 			num-dp = <0x01>;
 			dp-mask = [01];
 			phandle = <0x65>;
@@ -1029,7 +1029,7 @@
 		rng@32a36000 {
 			compatible = "phytium,rng";
 			reg = <0x00 0x32a36000 0x00 0x1000>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x66>;
 		};
 
@@ -1053,16 +1053,16 @@
 				phandle = <0x03>;
 			};
 		};
-
-		gdma@32b34000 {
-			compatible = "phytium,gdma";
-			dma-channels = <0x10>;
-			max-outstanding = <0x10>;
-			reg = <0x00 0x32b34000 0x00 0x1000>;
-			interrupts = <0x00 0xea 0x04>;
-			#dma-cells = <0x01>;
-			phandle = <0x69>;
-		};
+		//通过 DMA 控制器，系统可以在内存和外设之间进行快速的数据交换
+		// gdma@32b34000 {
+		// 	compatible = "phytium,gdma";
+		// 	dma-channels = <0x10>;
+		// 	max-outstanding = <0x10>;
+		// 	reg = <0x00 0x32b34000 0x00 0x1000>;
+		// 	interrupts = <0x00 0xea 0x04>;
+		// 	#dma-cells = <0x01>;
+		// 	phandle = <0x69>;
+		// };
 
 		spinlock@32b36000 {
 			compatible = "phytium,hwspinlock";
@@ -1086,7 +1086,7 @@
 			interrupt-map = <0x00 0x00 0x00 0x01 0x01 0x00 0x00 0x00 0x04 0x04 0x00 0x00 0x00 0x02 0x01 0x00 0x00 0x00 0x05 0x04 0x00 0x00 0x00 0x03 0x01 0x00 0x00 0x00 0x06 0x04 0x00 0x00 0x00 0x04 0x01 0x00 0x00 0x00 0x07 0x04>;
 			ranges = <0x1000000 0x00 0x00 0x00 0x50000000 0x00 0xf00000 0x2000000 0x00 0x58000000 0x00 0x58000000 0x00 0x28000000 0x3000000 0x10 0x00 0x10 0x00 0x10 0x00>;
 			iommu-map = <0x00 0x10 0x00 0x10000>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x6b>;
 		};
 
@@ -1155,7 +1155,7 @@
 			compatible = "phytium,pe220x-xhci";
 			reg = <0x00 0x31a08000 0x00 0x18000>;
 			interrupts = <0x00 0x10 0x04>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x71>;
 		};
 
@@ -1163,15 +1163,15 @@
 			compatible = "phytium,pe220x-xhci";
 			reg = <0x00 0x31a28000 0x00 0x18000>;
 			interrupts = <0x00 0x11 0x04>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x72>;
 		};
-
+		//SATA 控制器
 		sata@31a40000 {
 			compatible = "generic-ahci";
 			reg = <0x00 0x31a40000 0x00 0x1000>;
 			interrupts = <0x00 0x2a 0x04>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x73>;
 		};
 
@@ -1217,7 +1217,7 @@
 			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
 			clocks = <0x12 0x13 0x13 0x12>;
 			magic-packet;
-			status = "disabled";
+			status = "okay";
 			phandle = <0x77>;
 		};
 
@@ -1228,7 +1228,7 @@
 			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
 			clocks = <0x12 0x13 0x13 0x12>;
 			magic-packet;
-			status = "disabled";
+			status = "okay";
 			phandle = <0x78>;
 		};
 
@@ -1236,7 +1236,7 @@
 			compatible = "phytium,vpu";
 			reg = <0x00 0x32b00000 0x00 0x20000>;
 			interrupts = <0x00 0x0c 0x04>;
-			status = "okay";
+			status = "disabled";
 			phandle = <0x79>;
 		};
 
@@ -1470,7 +1470,7 @@
 		sram = "/soc/sram@32a10000";
 		cpu_scp_lpri = "/soc/sram@32a10000/scp-shmem@0";
 		cpu_scp_hpri = "/soc/sram@32a10000/scp-shmem@1";
-		gdma = "/soc/gdma@32b34000";
+		// gdma = "/soc/gdma@32b34000";
 		hwspinlock = "/soc/spinlock@32b36000";
 		pcie = "/soc/pcie@40000000";
 		edac = "/soc/edac@32b28000";
