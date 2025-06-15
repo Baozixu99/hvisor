@@ -26,7 +26,7 @@ pub const ROOT_ZONE_CPUS: u64 = (1 << 0) | (1 << 1);
 
 pub const ROOT_ZONE_NAME: &str = "root-linux";
 
-pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
+pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 8] = [
     // ram
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_RAM,
@@ -55,30 +55,12 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
         virtual_start: 0x30800000,
         size: 0x00200000,           // 2MB (GICD/GICR)
     },
-    // ethernet
+    // ethernet0
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
         physical_start: 0x3200c000,  
         virtual_start: 0x3200c000,
         size: 0x00002000,            // 8KB
-    },
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x3200e000, 
-        virtual_start: 0x3200e000,
-        size: 0x00002000,        // 8KB (对应 ethernet@3200e000)
-    },
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x32010000, 
-        virtual_start: 0x32010000,
-        size: 0x00002000,        // 8KB (对应 ethernet@32010000)
-    },
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x32012000, 
-        virtual_start: 0x32012000,
-        size: 0x00002000,        // 8KB (对应 ethernet@32012000)
     },
     // USB
     HvConfigMemoryRegion {
@@ -138,8 +120,8 @@ pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gicv_base: 0x30860000,    
     gicv_size: 0x10000,       // 64KB
 
-    gits_base: 0,             
-    gits_size: 0,
+    gits_base: 0x30820000,             
+    gits_size: 0x20000,
 };
 
 pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];

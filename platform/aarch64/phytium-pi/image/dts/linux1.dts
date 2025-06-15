@@ -14,9 +14,9 @@
 		// serial2 = "/soc/uart@2800e000";
 	//	serial3 = "/soc/uart@2800f000";
 		ethernet0 = "/soc/ethernet@3200c000";
-		ethernet1 = "/soc/ethernet@3200e000";
-		ethernet2 = "/soc/ethernet@32010000";
-		ethernet3 = "/soc/ethernet@32012000";
+		// ethernet1 = "/soc/ethernet@3200e000";
+		// ethernet2 = "/soc/ethernet@32010000";
+		// ethernet3 = "/soc/ethernet@32012000";
 	//	serial4 = "/soc/uart@28014000";
 	//	serial7 = "/soc/uart@2802A000";
 	//	serial8 = "/soc/uart@28032000";
@@ -1197,40 +1197,40 @@
 			phandle = <0x75>;
 		};
 
-		ethernet@3200e000 {
-			compatible = "cdns,phytium-gem-1.0";
-			reg = <0x00 0x3200e000 0x00 0x2000>;
-			interrupts = <0x00 0x3b 0x04 0x00 0x3c 0x04 0x00 0x3d 0x04 0x00 0x3e 0x04>;
-			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
-			clocks = <0x12 0x13 0x13 0x12>;
-			magic-packet;
-			status = "okay";
-			phy-mode = "sgmii";
-			use-mii;
-			phandle = <0x76>;
-		};
+		// ethernet@3200e000 {
+		// 	compatible = "cdns,phytium-gem-1.0";
+		// 	reg = <0x00 0x3200e000 0x00 0x2000>;
+		// 	interrupts = <0x00 0x3b 0x04 0x00 0x3c 0x04 0x00 0x3d 0x04 0x00 0x3e 0x04>;
+		// 	clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
+		// 	clocks = <0x12 0x13 0x13 0x12>;
+		// 	magic-packet;
+		// 	status = "disabled";
+		// 	phy-mode = "sgmii";
+		// 	use-mii;
+		// 	phandle = <0x76>;
+		// };
 
-		ethernet@32010000 {
-			compatible = "cdns,phytium-gem-1.0";
-			reg = <0x00 0x32010000 0x00 0x2000>;
-			interrupts = <0x00 0x40 0x04 0x00 0x41 0x04 0x00 0x42 0x04 0x00 0x43 0x04>;
-			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
-			clocks = <0x12 0x13 0x13 0x12>;
-			magic-packet;
-			status = "okay";
-			phandle = <0x77>;
-		};
+		// ethernet@32010000 {
+		// 	compatible = "cdns,phytium-gem-1.0";
+		// 	reg = <0x00 0x32010000 0x00 0x2000>;
+		// 	interrupts = <0x00 0x40 0x04 0x00 0x41 0x04 0x00 0x42 0x04 0x00 0x43 0x04>;
+		// 	clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
+		// 	clocks = <0x12 0x13 0x13 0x12>;
+		// 	magic-packet;
+		// 	status = "disabled";
+		// 	phandle = <0x77>;
+		// };
 
-		ethernet@32012000 {
-			compatible = "cdns,phytium-gem-1.0";
-			reg = <0x00 0x32012000 0x00 0x2000>;
-			interrupts = <0x00 0x44 0x04 0x00 0x45 0x04 0x00 0x46 0x04 0x00 0x47 0x04>;
-			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
-			clocks = <0x12 0x13 0x13 0x12>;
-			magic-packet;
-			status = "okay";
-			phandle = <0x78>;
-		};
+		// ethernet@32012000 {
+		// 	compatible = "cdns,phytium-gem-1.0";
+		// 	reg = <0x00 0x32012000 0x00 0x2000>;
+		// 	interrupts = <0x00 0x44 0x04 0x00 0x45 0x04 0x00 0x46 0x04 0x00 0x47 0x04>;
+		// 	clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
+		// 	clocks = <0x12 0x13 0x13 0x12>;
+		// 	magic-packet;
+		// 	status = "disabled";
+		// 	phandle = <0x78>;
+		// };
 
 		vpu@32b00000 {
 			compatible = "phytium,vpu";
@@ -1331,8 +1331,9 @@
 
 	chosen {
 		stdout-path = "serial1:115200n8";
-		// bootargs = "console=ttyAMA1,115200 earlyprintk  root=/dev/mmcblk0p1 rw rootwait";
-		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rootwait rw";
+		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rootwait rw";
+		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";
+		// bootargs = "console=ttyAMA1,115200 root=/dev/mmcblk0p1 rootwait rw init=/lib/systemd/systemd systemd.log_level=debug systemd.log_target=console systemd.unit=rescue.target";
 	};
 
 
@@ -1484,9 +1485,9 @@
 		sata0 = "/soc/sata@31a40000";
 		sata1 = "/soc/sata@32014000";
 		macb0 = "/soc/ethernet@3200c000";
-		macb1 = "/soc/ethernet@3200e000";
-		macb2 = "/soc/ethernet@32010000";
-		macb3 = "/soc/ethernet@32012000";
+		// macb1 = "/soc/ethernet@3200e000";
+		// macb2 = "/soc/ethernet@32010000";
+		// macb3 = "/soc/ethernet@32012000";
 		vpu0 = "/soc/vpu@32b00000";
 		mio9 = "/soc/i2c@28026000";
 		mio14 = "/soc/i2c@28030000";
