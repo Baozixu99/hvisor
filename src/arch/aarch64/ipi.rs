@@ -46,25 +46,21 @@ pub fn arch_send_event(cpu_id: u64, sgi_num: u64) {
     
         #[cfg(feature = "mpidr_phytium")]
         {
-            match cpu_id {
-                0 => {
-                    aff1 = 0x02 << 16;
-                    target_list = 1 << 0;
-                }
-                1 => {
-                    aff1 = 0x02 << 16;
-                    target_list = 1 << 1;
-                }
-                2 => {
-                    aff1 = 0x00 << 16;
-                    target_list = 1 << 2;
-                }
-                3 => {
-                    aff1 = 0x01 << 16;
-                    target_list = 1 << 3;
-                }
+            let mpidr: u64 = match cpu_id {
+                0 => 0x200,
+                1 => 0x201,
+                2 => 0x000,
+                3 => 0x100,
                 _ => panic!("Unsupported cpu_id: {}", cpu_id),
-            }
+            };
+
+            let aff0 = (mpidr >> 0) & 0xff;
+            aff1 = ((mpidr >> 8) & 0xff) << 16;
+            let aff2 = ((mpidr >> 16) & 0xff) << 32;
+            let aff3 = ((mpidr >> 32) & 0xff) << 48;
+
+            target_list = 1 << aff0;
+            debug!("send sgi to cpu_id: {}, mpidr=0x{:x}, sgi_num: {}", cpu_id, mpidr, sgi_num);
         }
     
         #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium")))]
