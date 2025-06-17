@@ -32,7 +32,7 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 8] = [
         mem_type: MEM_TYPE_RAM,
         physical_start: 0x80000000,
         virtual_start: 0x80000000,
-        size: 0x50000000,
+        size: 0x80000000,
     }, 
     // soc@0
     HvConfigMemoryRegion {
