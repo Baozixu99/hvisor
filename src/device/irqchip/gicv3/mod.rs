@@ -407,10 +407,26 @@ pub struct Gic {
 pub fn host_gicd_base() -> usize {
     GIC.get().unwrap().gicd_base
 }
-
 pub fn host_gicr_base(id: usize) -> usize {
-    assert!(id < consts::MAX_CPU_NUM);
-    GIC.get().unwrap().gicr_base + id * PER_GICR_SIZE
+    if cfg!(feature = "mpidr_phytium") {    
+        /* phytium:
+            GICR for Aff1=0, Aff0=0  → 0x30880000   (non-root CPU2)
+            GICR for Aff1=1, Aff0=0  → 0x308a0000   (non-root CPU3)
+            GICR for Aff1=2, Aff0=0  → 0x308c0000   (root CPU0)
+            GICR for Aff1=2, Aff0=1  → 0x308e0000   (root CPU1) 
+        */
+        static CPU_MPIDS: [usize; 4] = [0x200, 0x201, 0x000, 0x100]; // 逻辑 CPU0-3
+        assert!(id < CPU_MPIDS.len());
+        let mpidr = CPU_MPIDS[id];
+    
+        let aff0 = (mpidr >> 0) & 0xff; 
+        let aff1 = (mpidr >> 8) & 0xff; 
+        let cpu_interface_number = aff1 | aff0; 
+        GIC.get().unwrap().gicr_base + cpu_interface_number * PER_GICR_SIZE
+    }else {
+        assert!(id < consts::MAX_CPU_NUM);
+        GIC.get().unwrap().gicr_base + id * PER_GICR_SIZE
+    }
 }
 
 pub fn host_gits_base() -> usize {
