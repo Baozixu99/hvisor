@@ -140,7 +140,7 @@ pub fn console_getchar() -> Option<u8> {
 
 通过查看设备树信息，我们确认飞腾派平台的 CPU 节点确实使用了 `psci` 作为启用方式，并且其底层依赖 SMC 指令与固件通信来唤醒 CPU。然而，飞腾派的 CPU ID 编码方式不同于常见的 ARM 平台，其四颗核心对应的 MPIDR 值分别为 `0x200`, `0x201`, `0x00`, `0x100`，而不是标准的 `0x01`, `0x02`, `0x03`, `0x04`。这导致默认的 CPU ID 映射逻辑无法正确识别这些值，从而引发唤醒失败或后续执行异常。
 
-```json
+```text
 cpu@0 {
 			device_type = "cpu";
 			compatible = "phytium,ftc310\0arm,armv8";
@@ -466,7 +466,6 @@ chosen {
 
 `0x7020001` 对应 ICC_SGI1R_EL1 的值，表示 SGI 7 发往 Aff0 = 0、Aff1 = 2（MPIDR = 0x200）目标为 Root Linux 的 CPU（CPU0），理论上这会唤醒 Root Linux 的 Virtio 后端处理线程。
 
-![image-20250630133440682](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20250630133440682.png)
 
 **2.SGI 中断未在 Root Linux 被处理**.
 
