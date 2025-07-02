@@ -22,11 +22,11 @@ pub const BOARD_NCPUS: usize = 4;
 pub const ROOT_ZONE_DTB_ADDR: u64 = 0xa0000000;
 pub const ROOT_ZONE_KERNEL_ADDR: u64 = 0xa0400000;
 pub const ROOT_ZONE_ENTRY: u64 = 0xa0400000;
-pub const ROOT_ZONE_CPUS: u64 = (1 << 1) | (1 << 0);
+pub const ROOT_ZONE_CPUS: u64 = (1 << 3) | (1 << 2);
 
 pub const ROOT_ZONE_NAME: &str = "root-linux";
 
-pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 12] = [
+pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
     // ram
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_RAM,
@@ -49,12 +49,12 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 12] = [
         size: 0x800000,           
     },
     // GIC
-    HvConfigMemoryRegion {
-        mem_type: MEM_TYPE_IO,
-        physical_start: 0x30800000,  
-        virtual_start: 0x30800000,
-        size: 0x00100000,          
-    },
+    // HvConfigMemoryRegion {
+    //     mem_type: MEM_TYPE_IO,
+    //     physical_start: 0x30880000,  
+    //     virtual_start: 0x30888000,
+    //     size: 0x80000,          
+    // },
     // ethernet0
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
@@ -142,8 +142,8 @@ pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gich_size: 0x0,       // 64KB
     gicv_base: 0x0,    
     gicv_size: 0x0,       // 64KB
-    gits_base: 0x30820000,             
-    gits_size: 0x20000,
+    gits_base: 0x0,             
+    gits_size: 0x0,
 };
 
 pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];

@@ -46,10 +46,10 @@
 			};
 		};
 
-		optee {
-			compatible = "linaro,optee-tz";
-			method = "smc";
-		};
+		// optee {
+		// 	compatible = "linaro,optee-tz";
+		// 	method = "smc";
+		// };
 	};
 
 	cpus {
@@ -59,73 +59,73 @@
 
 		cpu-map {
 
-			cluster0 {
+			// cluster0 {
+
+			// 	core0 {
+			// 		cpu = <0x05>;
+			// 	};
+			// };
+
+			// cluster1 {
+
+			// 	core0 {
+			// 		cpu = <0x06>;
+			// 	};
+			// };
+
+			cluster2 {
 
 				core0 {
-					cpu = <0x05>;
+					cpu = <0x07>;
+				};
+
+				core1 {
+					cpu = <0x08>;
 				};
 			};
 
-			cluster1 {
-
-				core0 {
-					cpu = <0x06>;
-				};
-			};
-
-		// 	cluster2 {
-
-		// 		core0 {
-		// 			cpu = <0x07>;
-		// 		};
-
-		// 		core1 {
-		// 			cpu = <0x08>;
-		// 		};
-		// 	};
-
 
 		};
 
-		// cpu@0 {
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "phytium,ftc310\0arm,armv8";
+			reg = <0x00 0x200>;
+			enable-method = "psci";
+			clocks = <0x09 0x02>;
+			capacity-dmips-mhz = <0xb22>;
+			phandle = <0x07>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "phytium,ftc310\0arm,armv8";
+			reg = <0x00 0x201>;
+			enable-method = "psci";
+			clocks = <0x09 0x02>;
+			capacity-dmips-mhz = <0xb22>;
+			phandle = <0x08>;
+		};
+
+		// cpu@100 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc310\0arm,armv8";
-		// 	reg = <0x00 0x200>;
+		// 	compatible = "phytium,ftc664\0arm,armv8";
+		// 	reg = <0x00 0x00>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x02>;
-		// 	capacity-dmips-mhz = <0xb22>;
-		// 	phandle = <0x07>;
+		// 	clocks = <0x09 0x00>;
+		// 	capacity-dmips-mhz = <0x161c>;
+		// 	phandle = <0x05>;
 		// };
 
-		// cpu@1 {
+		// cpu@101 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc310\0arm,armv8";
-		// 	reg = <0x00 0x201>;
+		// 	compatible = "phytium,ftc664\0arm,armv8";
+		// 	reg = <0x00 0x100>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x02>;
-		// 	capacity-dmips-mhz = <0xb22>;
-		// 	phandle = <0x08>;
+		// 	clocks = <0x09 0x01>;
+		// 	capacity-dmips-mhz = <0x161c>;
+		// 	phandle = <0x06>;
 		// };
-
-		cpu@100 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x00>;
-			enable-method = "psci";
-			clocks = <0x09 0x00>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x05>;
-		};
-
-		cpu@101 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x100>;
-			enable-method = "psci";
-			clocks = <0x09 0x01>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x06>;
-		};
 	};
 	
 
@@ -137,16 +137,17 @@
 		#size-cells = <0x02>;
 		ranges;
 		interrupt-controller;
-		reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000 0x00 0x30840000 0x00 0x10000 0x00 0x30850000 0x00 0x10000 0x00 0x30860000 0x00 0x10000>;
+		reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000>; 
+		// reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000 0x00 0x30840000 0x00 0x10000 0x00 0x30850000 0x00 0x10000 0x00 0x30860000 0x00 0x10000>;
 		interrupts = <0x01 0x09 0x08>;
 		phandle = <0x01>;
 
-		gic-its@30820000 {
-			compatible = "arm,gic-v3-its";
-			msi-controller;
-			reg = <0x00 0x30820000 0x00 0x20000>;
-			phandle = <0x0f>;
-		};
+		// gic-its@30820000 {
+		// 	compatible = "arm,gic-v3-its";
+		// 	msi-controller;
+		// 	reg = <0x00 0x30820000 0x00 0x20000>;
+		// 	phandle = <0x0f>;
+		// };
 	};
 
 	pmu {
@@ -230,39 +231,39 @@
 		dma-coherent;
 		ranges;
 		phandle = <0x1a>;
-		mmc@28000000 {
-			compatible = "phytium,mci";
-			reg = <0x00 0x28000000 0x00 0x1000>;
-			interrupts = <0x00 0x48 0x04>;
-			clocks = <0x0a>;
-			clock-names = "phytium_mci_clk";
-			status = "okay";
-			bus-width = <0x04>;
-			max-frequency = <0x2faf080>;
-			cap-sdio-irq;
-			cap-sd-highspeed;
-			no-mmc;
-			phandle = <0x1b>;
-		};
+		// mmc@28000000 {
+		// 	compatible = "phytium,mci";
+		// 	reg = <0x00 0x28000000 0x00 0x1000>;
+		// 	interrupts = <0x00 0x48 0x04>;
+		// 	clocks = <0x0a>;
+		// 	clock-names = "phytium_mci_clk";
+		// 	status = "okay";
+		// 	bus-width = <0x04>;
+		// 	max-frequency = <0x2faf080>;
+		// 	cap-sdio-irq;
+		// 	cap-sd-highspeed;
+		// 	no-mmc;
+		// 	phandle = <0x1b>;
+		// };
 
-		mmc@28001000 {
-			compatible = "phytium,mci";
-			reg = <0x00 0x28001000 0x00 0x1000>;
-			interrupts = <0x00 0x49 0x04>;
-			clocks = <0x0a>;
-			clock-names = "phytium_mci_clk";
-			status = "okay";
-			bus-width = <0x04>;
-			max-frequency = <0x2faf080>;
-			#sd-uhs-sdr25;
-			#sd-uhs-sdr50;
-			cap-sdio-irq;
-			cap-sd-highspeed;
-			no-mmc;
-			no-sd;
-			non-removable;
-			phandle = <0x1c>;
-		};
+		// mmc@28001000 {
+		// 	compatible = "phytium,mci";
+		// 	reg = <0x00 0x28001000 0x00 0x1000>;
+		// 	interrupts = <0x00 0x49 0x04>;
+		// 	clocks = <0x0a>;
+		// 	clock-names = "phytium_mci_clk";
+		// 	status = "okay";
+		// 	bus-width = <0x04>;
+		// 	max-frequency = <0x2faf080>;
+		// 	#sd-uhs-sdr25;
+		// 	#sd-uhs-sdr50;
+		// 	cap-sdio-irq;
+		// 	cap-sd-highspeed;
+		// 	no-mmc;
+		// 	no-sd;
+		// 	non-removable;
+		// 	phandle = <0x1c>;
+		// };
 		uart@2800d000 {
 			compatible = "arm,pl011\0arm,primecell";
 			reg = <0x00 0x2800d000 0x00 0x1000>;
@@ -318,29 +319,29 @@
 
 	};
 
-	// // virtio blk
-	// virtio_mmio@a003c00 {
-	// 	dma-coherent;
-	// 	interrupt-parent = <0x01>;
-	// 	interrupts = <0x0 0x2e 0x1>;
-	// 	reg = <0x0 0xa003c00 0x0 0x200>;
-	// 	compatible = "virtio,mmio";
-	// };
-	// //virtio serial
-	// virtio_mmio@a003800 {
-	// 	dma-coherent;
-	// 	interrupt-parent = <0x01>;
-	// 	interrupts = <0x0 0x2c 0x1>;
-	// 	reg = <0x0 0xa003800 0x0 0x200>;
-	// 	compatible = "virtio,mmio";
-	// };
+	// virtio blk
+	virtio_mmio@a003c00 {
+		dma-coherent;
+		interrupt-parent = <0x01>;
+		interrupts = <0x0 0x2e 0x1>;
+		reg = <0x0 0xa003c00 0x0 0x200>;
+		compatible = "virtio,mmio";
+	};
+	//virtio serial
+	virtio_mmio@a003800 {
+		dma-coherent;
+		interrupt-parent = <0x01>;
+		interrupts = <0x0 0x2c 0x1>;
+		reg = <0x0 0xa003800 0x0 0x200>;
+		compatible = "virtio,mmio";
+	};
 	chosen {
-		stdout-path = "serial1:115200n8";
-		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";
-		// stdout-path = "/virtio_mmio@a003800";
-		// bootargs = "clk_ignore_unused earlycon=virtio,mmio,0xa003800 console=hvc0 root=/dev/vda rootwait rw";
 		// stdout-path = "serial1:115200n8";
-		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/vda rw rootwait";
+		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";
+		// stdout-path = "/virtio_mmio@a003800";
+		// bootargs = "clk_ignore_unused earlycon=virtio,mmio,0xa003800 console=hvc0 root=/dev/vda rootwait rw init=/bin/sh";
+		stdout-path = "serial1:115200n8";
+		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/vda rw rootwait init=/bin/sh";
 
 	};
 
@@ -355,12 +356,12 @@
 		scmi_dvfs = "/firmware/scmi/protocol@13";
 		scmi_sensors0 = "/firmware/scmi/protocol@15";
 		cpu = "/cpus";
-		// cpu_l0 = "/cpus/cpu@0";
-		// cpu_l1 = "/cpus/cpu@1";
+		cpu_l0 = "/cpus/cpu@0";
+		cpu_l1 = "/cpus/cpu@1";
 		cpu_b0 = "/cpus/cpu@100";
 		cpu_b1 = "/cpus/cpu@101";
 		gic = "/interrupt-controller@30800000";
-		its = "/interrupt-controller@30800000/gic-its@30820000";
+		// its = "/interrupt-controller@30800000/gic-its@30820000";
 		sysclk_48mhz = "/clocks/clk48mhz";
 		sysclk_50mhz = "/clocks/clk50mhz";
 		sysclk_100mhz = "/clocks/clk100mhz";
@@ -370,8 +371,8 @@
 		sysclk_600mhz = "/clocks/clk600mhz";
 		sysclk_1200mhz = "/clocks/clk1200mhz";
 		soc = "/soc";
-		mmc0 = "/soc/mmc@28000000";
-		mmc1 = "/soc/mmc@28001000";
+		// mmc0 = "/soc/mmc@28000000";
+		// mmc1 = "/soc/mmc@28001000";
 		uart1 = "/soc/uart@2800d000";
 		mbox = "/soc/mailbox@32a00000";
 		sram = "/soc/sram@32a10000";

@@ -12,7 +12,7 @@
             "devices": [
                 {
                     "type": "blk",
-                    "addr": "0xa008c00",
+                    "addr": "0xa003c00",
                     "len": "0x200",
                     "irq": 78,
                     "img": "rootfs2.ext4",
@@ -20,18 +20,9 @@
                 },
                 {
                     "type": "console",
-                    "addr": "0xa008800",
+                    "addr": "0xa003800",
                     "len": "0x200",
                     "irq": 76,
-                    "status": "enable"
-                },
-                {
-                    "type": "net",
-                    "addr": "0xa008600",
-                    "len": "0x200",
-                    "irq": 75,
-                    "tap": "tap0",
-                    "mac": ["0x00", "0x16", "0x3e", "0x10", "0x10", "0x10"],
                     "status": "enable"
                 }
             ]

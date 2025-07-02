@@ -83,70 +83,70 @@
 		phandle = <0x19>;
 
 		cpu-map {
-			// cluster0 {
-
-			// 	core0 {
-			// 		cpu = <0x05>;
-			// 	};
-			// };
-
-			// cluster1 {
-
-			// 	core0 {
-			// 		cpu = <0x06>;
-			// 	};
-			// };
-
-			cluster2 {
+			cluster0 {
 
 				core0 {
-					cpu = <0x07>;
-				};
-
-				core1 {
-					cpu = <0x08>;
+					cpu = <0x05>;
 				};
 			};
+
+			cluster1 {
+
+				core0 {
+					cpu = <0x06>;
+				};
+			};
+
+			// cluster2 {
+
+			// 	core0 {
+			// 		cpu = <0x07>;
+			// 	};
+
+			// 	core1 {
+			// 		cpu = <0x08>;
+			// 	};
+			// };
 		};
 
-		cpu@0 {
-			device_type = "cpu";
-			compatible = "phytium,ftc310\0arm,armv8";
-			reg = <0x00 0x200>;
-			enable-method = "psci";
-			clocks = <0x09 0x02>;
-			capacity-dmips-mhz = <0xb22>;
-			phandle = <0x07>;
-		};
-
-		cpu@1 {
-			device_type = "cpu";
-			compatible = "phytium,ftc310\0arm,armv8";
-			reg = <0x00 0x201>;
-			enable-method = "psci";
-			clocks = <0x09 0x02>;
-			capacity-dmips-mhz = <0xb22>;
-			phandle = <0x08>;
-		};
-		// cpu@100 {
+		// cpu@0 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc664\0arm,armv8";
-		// 	reg = <0x00 0x00>;
+		// 	compatible = "phytium,ftc310\0arm,armv8";
+		// 	reg = <0x00 0x200>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x00>;
-		// 	capacity-dmips-mhz = <0x161c>;
-		// 	phandle = <0x05>;
+		// 	clocks = <0x09 0x02>;
+		// 	capacity-dmips-mhz = <0xb22>;
+		// 	phandle = <0x07>;
 		// };
 
-		// cpu@101 {
+		// cpu@1 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc664\0arm,armv8";
-		// 	reg = <0x00 0x100>;
+		// 	compatible = "phytium,ftc310\0arm,armv8";
+		// 	reg = <0x00 0x201>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x01>;
-		// 	capacity-dmips-mhz = <0x161c>;
-		// 	phandle = <0x06>;
+		// 	clocks = <0x09 0x02>;
+		// 	capacity-dmips-mhz = <0xb22>;
+		// 	phandle = <0x08>;
 		// };
+		cpu@100 {
+			device_type = "cpu";
+			compatible = "phytium,ftc664\0arm,armv8";
+			reg = <0x00 0x00>;
+			enable-method = "psci";
+			clocks = <0x09 0x00>;
+			capacity-dmips-mhz = <0x161c>;
+			phandle = <0x05>;
+		};
+
+		cpu@101 {
+			device_type = "cpu";
+			compatible = "phytium,ftc664\0arm,armv8";
+			reg = <0x00 0x100>;
+			enable-method = "psci";
+			clocks = <0x09 0x01>;
+			capacity-dmips-mhz = <0x161c>;
+			phandle = <0x06>;
+		};
 
 	};
 
@@ -157,16 +157,17 @@
 		#size-cells = <0x02>;
 		ranges;
 		interrupt-controller;
-		reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000 0x00 0x30840000 0x00 0x10000 0x00 0x30850000 0x00 0x10000 0x00 0x30860000 0x00 0x10000>;
+		reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000>; 
+		// reg = <0x00 0x30800000 0x00 0x20000 0x00 0x30880000 0x00 0x80000 0x00 0x30840000 0x00 0x10000 0x00 0x30850000 0x00 0x10000 0x00 0x30860000 0x00 0x10000>;
 		interrupts = <0x01 0x09 0x08>;
 		phandle = <0x01>;
 
-		gic-its@30820000 {
-			compatible = "arm,gic-v3-its";
-			msi-controller;
-			reg = <0x00 0x30820000 0x00 0x20000>;
-			phandle = <0x0f>;
-		};
+		// gic-its@30820000 {
+		// 	compatible = "arm,gic-v3-its";
+		// 	msi-controller;
+		// 	reg = <0x00 0x30820000 0x00 0x20000>;
+		// 	phandle = <0x0f>;
+		// };
 	};
 
 	pmu {
@@ -1440,8 +1441,8 @@
 		cpu = "/cpus";
 		cpu_l0 = "/cpus/cpu@0";
 		cpu_l1 = "/cpus/cpu@1";
-		// cpu_b0 = "/cpus/cpu@100";
-		// cpu_b1 = "/cpus/cpu@101";
+		cpu_b0 = "/cpus/cpu@100";
+		cpu_b1 = "/cpus/cpu@101";
 		gic = "/interrupt-controller@30800000";
 		its = "/interrupt-controller@30800000/gic-its@30820000";
 		sysclk_48mhz = "/clocks/clk48mhz";

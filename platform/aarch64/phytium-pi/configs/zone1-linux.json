@@ -2,7 +2,7 @@
     "arch": "arm64",
     "name": "linux2",
     "zone_id": 1,
-    "cpus": [2, 3],
+    "cpus": [0,1],
     "memory_regions": [
         {
             "type": "ram",
@@ -12,76 +12,43 @@
         },
         {
             "type": "io",
-            "physical_start": "0x28000000",
-            "virtual_start":  "0x28000000",
-            "size": "0x00100000"
-        },
-        {
-            "type": "io",
-            "physical_start": "0x30000000",
-            "virtual_start":  "0x30000000",
-            "size": "0x800000"
-        },
-        {
-            "type": "io",
-            "physical_start": "0x30800000",
-            "virtual_start":  "0x30800000",
-            "size": "0x00200000"
-        },
-        {
-            "type": "io",
-            "physical_start": "0x3200c000",
-            "virtual_start":  "0x3200c000",
-            "size": "0x00002000"
-        },
-        {
-            "type": "io",
-            "physical_start": "0x31800000",
-            "virtual_start":  "0x31800000",
-            "size": "0x00080000"
-        },
-        {
-            "type": "io",
-            "physical_start": "0x32a00000",
-            "virtual_start":  "0x32a00000",
+            "physical_start": "0x2800d000",
+            "virtual_start":  "0x2800d000",
             "size": "0x1000"
         },
         {
             "type": "io",
-            "physical_start": "0x32a10000",
-            "virtual_start":  "0x32a10000",
-            "size": "0x2000"
+            "physical_start": "0x30880000",
+            "virtual_start":  "0x30880000",
+            "size": "0x80000"
         },
         {
             "type": "virtio",
-            "physical_start": "0xa008c00",
-            "virtual_start":  "0xa008c00",
+            "physical_start": "0xa003c00",
+            "virtual_start":  "0xa003c00",
             "size": "0x200"
         },
         {
             "type": "virtio",
-            "physical_start": "0xa008800",
-            "virtual_start":  "0xa008800",
-            "size": "0x200"
-        },
-        {
-            "type": "virtio",
-            "physical_start": "0xa008600",
-            "virtual_start":  "0xa008600",
+            "physical_start": "0xa003800",
+            "virtual_start": "0xa003800",
             "size": "0x200"
         }
     ],
-    "interrupts": [46, 64, 87, 104, 105, 116, 133, 138, 191],
+    "interrupts": [54, 76, 78, 116],
     "ivc_configs": [],
     "kernel_filepath": "./Image",
     "dtb_filepath": "./linux2.dtb",
-    "kernel_load_paddr": "0xb0100000",
+    "kernel_load_paddr": "0xb0400000",
     "dtb_load_paddr":   "0xb0000000",
-    "entry_point":      "0xb0100000",
+    "entry_point":      "0xb0400000",
     "arch_config": {
-        "gicd_base": "0x30800000",
-        "gicd_size": "0x20000",
-        "gicr_base": "0x30880000",
-        "gicr_size": "0x80000"
+            "gic_version": "v3",
+            "gicd_base": "0x30800000",
+            "gicd_size": "0x20000",
+            "gicr_base": "0x30880000",
+            "gicr_size": "0x80000",
+            "gits_base": "0x0",
+            "gits_size": "0x0"
     }
 }
