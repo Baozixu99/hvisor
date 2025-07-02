@@ -44,11 +44,12 @@ impl Zone {
         self.mmio_region_register(arch.gits_base, arch.gits_size, vgicv3_its_handler, 0);
 
         for cpu in 0..unsafe { consts::NCPU } {
-            let gicr_base = if cfg!(feature = "mpidr_phytium") {
-                host_gicr_base(cpu)
-            } else {
-                arch.gicr_base + cpu * PER_GICR_SIZE
-            };
+            // let gicr_base = if cfg!(feature = "mpidr_phytium") {
+            //     host_gicr_base(cpu)
+            // } else {
+            //     arch.gicr_base + cpu * PER_GICR_SIZE
+            // };
+            let gicr_base = arch.gicr_base + cpu * PER_GICR_SIZE;
             info!("registering gicr cpu{} at {:#x?}", cpu, gicr_base);
             self.mmio_region_register(gicr_base, PER_GICR_SIZE, vgicv3_redist_handler, cpu);
             
@@ -140,7 +141,7 @@ fn restrict_bitmask_access(
 }
 
 pub fn vgicv3_redist_handler(mmio: &mut MMIOAccess, cpu: usize) -> HvResult {
-    trace!("gicr({}) mmio = {:#x?}", cpu, mmio);
+    debug!("gicr({}) mmio = {:#x?}", cpu, mmio);
     let gicr_base = host_gicr_base(cpu);
     match mmio.address {
         GICR_CTLR => {

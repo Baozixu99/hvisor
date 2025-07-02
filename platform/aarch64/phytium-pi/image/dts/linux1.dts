@@ -83,70 +83,70 @@
 		phandle = <0x19>;
 
 		cpu-map {
-			cluster0 {
-
-				core0 {
-					cpu = <0x05>;
-				};
-			};
-
-			cluster1 {
-
-				core0 {
-					cpu = <0x06>;
-				};
-			};
-
-			// cluster2 {
+			// cluster0 {
 
 			// 	core0 {
-			// 		cpu = <0x07>;
-			// 	};
-
-			// 	core1 {
-			// 		cpu = <0x08>;
+			// 		cpu = <0x05>;
 			// 	};
 			// };
+
+			// cluster1 {
+
+			// 	core0 {
+			// 		cpu = <0x06>;
+			// 	};
+			// };
+
+			cluster2 {
+
+				core0 {
+					cpu = <0x07>;
+				};
+
+				core1 {
+					cpu = <0x08>;
+				};
+			};
 		};
 
-		// cpu@0 {
+		cpu@0 {
+			device_type = "cpu";
+			compatible = "phytium,ftc310\0arm,armv8";
+			reg = <0x00 0x200>;
+			enable-method = "psci";
+			clocks = <0x09 0x02>;
+			capacity-dmips-mhz = <0xb22>;
+			phandle = <0x07>;
+		};
+
+		cpu@1 {
+			device_type = "cpu";
+			compatible = "phytium,ftc310\0arm,armv8";
+			reg = <0x00 0x201>;
+			enable-method = "psci";
+			clocks = <0x09 0x02>;
+			capacity-dmips-mhz = <0xb22>;
+			phandle = <0x08>;
+		};
+		// cpu@100 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc310\0arm,armv8";
-		// 	reg = <0x00 0x200>;
+		// 	compatible = "phytium,ftc664\0arm,armv8";
+		// 	reg = <0x00 0x00>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x02>;
-		// 	capacity-dmips-mhz = <0xb22>;
-		// 	phandle = <0x07>;
+		// 	clocks = <0x09 0x00>;
+		// 	capacity-dmips-mhz = <0x161c>;
+		// 	phandle = <0x05>;
 		// };
 
-		// cpu@1 {
+		// cpu@101 {
 		// 	device_type = "cpu";
-		// 	compatible = "phytium,ftc310\0arm,armv8";
-		// 	reg = <0x00 0x201>;
+		// 	compatible = "phytium,ftc664\0arm,armv8";
+		// 	reg = <0x00 0x100>;
 		// 	enable-method = "psci";
-		// 	clocks = <0x09 0x02>;
-		// 	capacity-dmips-mhz = <0xb22>;
-		// 	phandle = <0x08>;
+		// 	clocks = <0x09 0x01>;
+		// 	capacity-dmips-mhz = <0x161c>;
+		// 	phandle = <0x06>;
 		// };
-		cpu@100 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x00>;
-			enable-method = "psci";
-			clocks = <0x09 0x00>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x05>;
-		};
-
-		cpu@101 {
-			device_type = "cpu";
-			compatible = "phytium,ftc664\0arm,armv8";
-			reg = <0x00 0x100>;
-			enable-method = "psci";
-			clocks = <0x09 0x01>;
-			capacity-dmips-mhz = <0x161c>;
-			phandle = <0x06>;
-		};
 
 	};
 
