@@ -44,12 +44,11 @@ impl Zone {
         self.mmio_region_register(arch.gits_base, arch.gits_size, vgicv3_its_handler, 0);
 
         for cpu in 0..unsafe { consts::NCPU } {
-            // let gicr_base = if cfg!(feature = "mpidr_phytium") {
-            //     host_gicr_base(cpu)
-            // } else {
-            //     arch.gicr_base + cpu * PER_GICR_SIZE
-            // };
-            let gicr_base = arch.gicr_base + cpu * PER_GICR_SIZE;
+            let gicr_base = if cfg!(feature = "mpidr_phytium") {
+                host_gicr_base(cpu)
+            } else {
+                arch.gicr_base + cpu * PER_GICR_SIZE
+            };
             info!("registering gicr cpu{} at {:#x?}", cpu, gicr_base);
             self.mmio_region_register(gicr_base, PER_GICR_SIZE, vgicv3_redist_handler, cpu);
             
@@ -159,9 +158,15 @@ pub fn vgicv3_redist_handler(mmio: &mut MMIOAccess, cpu: usize) -> HvResult {
         }
         GICR_TYPER => {
             mmio_perform_access(gicr_base, mmio);
-            if cpu == unsafe { consts::NCPU } - 1 {
-                mmio.value |= GICR_TYPER_LAST;
-            }
+            if cfg!(feature = "mpidr_phytium"){
+                if cpu == 1 {    //cpu1 is the last cpu in phytium-pi
+                    mmio.value |= GICR_TYPER_LAST;
+                }
+            }else {
+                if cpu == unsafe { consts::NCPU } - 1 {
+                    mmio.value |= GICR_TYPER_LAST;
+                }
+            } 
         }
         GICR_IIDR | 0xffd0..=0xfffc => {
             // Read-only registers that might be used by a zone to find the redistributor corresponding to a CPU. Keep them accessible.

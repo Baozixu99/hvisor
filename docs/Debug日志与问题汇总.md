@@ -598,3 +598,169 @@ pub fn vgicv3_mmio_init(&mut self, arch: &HvArchZoneConfig) {
 ```
 
 报错原因源于 virtio 后端未及时响应，实为中断注入失败引发；深层根因是 GICR 分配逻辑未与 CPU 的 MPIDR 对齐。这样修改后即可保证 VGIC 注册的 GICR 区域与 Linux 启动过程中识别的一致，**确保 virtio 中断能够正确注入并被处理**。
+
+#### 1.9 GICR 映射重复 + LAST 标志设置错误
+
+在解决了 GIC Redistributor 地址冲突问题后，虽然系统不再出现 `virtio backend is too slow` 的报错，但在 Linux 内核启动过程中仍然出现了卡死现象。具体表现为系统日志中输出如下内容后停滞不前：
+
+![image-20250705170433515](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20250705170433515.png)
+
+##### 1.GICR 地址映射重复
+
+在 `board.rs` 中的 `ROOT_ZONE_MEMORY_REGIONS` 列表中，手动添加了 GICR 地址区域的映射：
+
+```rust
+pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
+        HvConfigMemoryRegion {
+        mem_type: MEM_TYPE_IO,
+        physical_start: 0x30880000,  //gicr
+        virtual_start: 0x30888000,
+        size: 0x80000,          
+    },
+];
+```
+
+而在 `vgicv3_mmio_init()` 函数中，又再次为每个 CPU 注册了 GICR 的 MMIO 区域：
+
+```rust
+self.mmio_region_register(gicr_base, PER_GICR_SIZE, vgicv3_redist_handler, cpu);
+```
+
+**重复映射**导致了内存访问冲突，进而影响到 Linux 内核对 GICR 的正常识别和初始化，故需要删除 `board.rs` 中对 GICR 区域的手动映射配置，让所有的 GICR 区域由 `vgicv3_mmio_init()` 函数统一管理。
+
+##### 2. **GICR_TYPER.LAST 设置逻辑错误**
+
+删除后启动Root linux出现`CPU0: mpidr 200 has no re-distributor!`报错，没有找到CPU0对应的 GICR 基地址；在裸机linux启动日志和hvisor启动日志中可看到各个CPU对应的gicr地址如下，两者是一致的，理论上不应该会出现找不到CPU0对应的 GICR 基地址问题：
+
+``` c++
+//裸机linux启动日志
+CPU0: found redistributor 200 region 0:0x00000000308c0000 
+ CPU1: found redistributor 201 region 0:0x00000000308e0000 
+ CPU2: found redistributor 0 region 0:0x0000000030880000
+ CPU3: found redistributor 100 region 0:0x00000000308a0000
+//hvisor启动日志
+[INFO  0] (hvisor::device::irqchip::gicv3::vgic:52) registering gicr cpu0 at 0x30880000
+[INFO  0] (hvisor::device::irqchip::gicv3::vgic:52) registering gicr cpu1 at 0x308a0000
+[INFO  0] (hvisor::device::irqchip::gicv3::vgic:52) registering gicr cpu2 at 0x308c0000
+[INFO  0] (hvisor::device::irqchip::gicv3::vgic:52) registering gicr cpu3 at 0x308e0000
+```
+
+查看linux源码分析Linux启动时如何扫描 GIC Redistributor 区域（GICR），相关代码如下：
+
+```c
+static int gic_iterate_rdists(int (*fn)(struct redist_region *, void __iomem *))
+{
+	int ret = -ENODEV;
+	int i;
+    //  遍历所有 Redistributor 区域
+	for (i = 0; i < gic_data.nr_redist_regions; i++) {
+		void __iomem *ptr = gic_data.redist_regions[i].redist_base;
+		u64 typer;
+		u32 reg;
+
+		reg = readl_relaxed(ptr + GICR_PIDR2) & GIC_PIDR2_ARCH_MASK;
+		if (reg != GIC_PIDR2_ARCH_GICv3 &&
+		    reg != GIC_PIDR2_ARCH_GICv4) { /* We're in trouble... */
+			pr_warn("No redistributor present @%p\n", ptr);
+			break;
+		}
+     // 遍历当前 Redistributor 区域中的所有 Redistributor 实例
+		do {
+			typer = gic_read_typer(ptr + GICR_TYPER);
+			ret = fn(gic_data.redist_regions + i, ptr);
+			if (!ret)
+				return 0;
+
+			if (gic_data.redist_regions[i].single_redist)
+				break;
+
+			if (gic_data.redist_stride) {
+				ptr += gic_data.redist_stride;
+			} else {
+				ptr += SZ_64K * 2; /* Skip RD_base + SGI_base */
+				if (typer & GICR_TYPER_VLPIS)
+					ptr += SZ_64K * 2; /* Skip VLPI_base + reserved page */
+			}
+		} while (!(typer & GICR_TYPER_LAST));//GICR_TYPER.LAST == 1（表示这是最后一个 Redistributor）
+	}
+
+	return ret ? -ENODEV : 0;
+}
+```
+
+Linux 内核在启动过程中会从 GICR 基地址开始依次扫描每个 CPU 的 Redistributor 区域，直到遇到设置了 `GICR_TYPER.LAST` 标志的寄存器页为止。结合hvisor启动日志，发现Linux目前只扫描到了CPU2（0x30880000）和CPU3（0x308a0000）的Redistributor区域，没有扫描到CPU0（0x308c0000）和CPU1（0x308e0000）的Redistributor区域：
+
+
+```shell
+[DEBUG 0] (hvisor::device::irqchip::gicv3::vgic:143) gicr(2) mmio = MMIOAccess {
+    address: 0xffe8,
+    size: 0x4,
+    is_write: false,
+    value: 0xffff80001170ffe8,
+}
+[DEBUG 0] (hvisor::device::irqchip::gicv3::vgic:143) gicr(2) mmio = MMIOAccess {
+    address: 0x8,
+    size: 0x8,
+    is_write: false,
+    value: 0xffff800011700008,
+}
+[DEBUG 0] (hvisor::device::irqchip::gicv3::vgic:143) gicr(2) mmio = MMIOAccess {
+    address: 0x8,
+    size: 0x8,
+    is_write: false,
+    value: 0xffff800011700008,
+}
+[DEBUG 0] (hvisor::device::irqchip::gicv3::vgic:143) gicr(3) mmio = MMIOAccess {
+    address: 0x8,
+    size: 0x8,
+    is_write: false,
+    value: 0xffff800011720008,
+}
+[DEBUG 0] (hvisor::device::irqchip::gicv3::vgic:143) gicr(3) mmio = MMIOAccess {
+    address: 0x8,
+    size: 0x8,
+    is_write: false,
+    value: 0xffff800011720008,
+}
+[    0.000000] ------------[ cut here ]------------
+[    0.000000] CPU0: mpidr 200 has no re-distributor!
+[    0.000000] WARNING: CPU: 0 PID: 0 at drivers/irqchip/irq-gic-v3.c:908 gic_init_bases+0x48c/0x590
+[    0.000000] Modules linked in:
+[    0.000000] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.10.209-phytium-embedded-v2.2 #126
+```
+
+在当前的 `vgicv3_redist_handler` 实现中，处理 `GICR_TYPER` 寄存器访问的逻辑如下：
+
+```rust
+match mmio.address {
+        GICR_TYPER => {  
+            mmio_perform_access(gicr_base, mmio);
+            if cpu == unsafe { consts::NCPU } - 1 {  // NCPU=4
+               mmio.value |= GICR_TYPER_LAST;
+            }
+        }
+}
+```
+
+这段逻辑默认将最后一个 CPU（即 CPU3）设为最后一个 Redistributor，但实际上，在飞腾派平台上，**CPU0 的 GICR 区域才是最后一个 Redistributor**。因此，当 Linux 扫描到 CPU1（0x308a0000）时就提前遇到了 `LAST=1` 的标志，停止继续扫描，导致后续的 CPU0（0x308c0000）和 CPU1（0x308e0000）的 Redistributor 区域未被识别。
+
+针对飞腾派平台的硬件特性，我们修改 `vgicv3_redist_handler` 中判断是否设置 `GICR_TYPER.LAST` 的逻辑：
+
+```rust
+match mmio.address {
+        GICR_TYPER => {
+            mmio_perform_access(gicr_base, mmio);
+            if cfg!(feature = "mpidr_phytium"){
+                if cpu == 1 {    //cpu1 is the last cpu in phytium-pi
+                    mmio.value |= GICR_TYPER_LAST;
+                }
+            }else {
+                if cpu == unsafe { consts::NCPU } - 1 {
+                    mmio.value |= GICR_TYPER_LAST;
+                }
+            } 
+        }
+}
+```
+
+这样，Linux 内核在扫描时可以完整遍历所有 CPU 的 GICR 区域，正确识别每个 CPU 的 Redistributor，从而完成 GICv3 的初始化。修改完成后重新构建并运行 hvisor，Linux 内核成功完成了 GIC 初始化流程，能够识别所有 CPU 的 Redistributor 区域。串口输出完整，系统响应正常，Virtio 设备中断也能够正常注入。
