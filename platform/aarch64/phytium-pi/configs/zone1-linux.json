@@ -12,15 +12,15 @@
         },
         {
             "type": "io",
-            "physical_start": "0x2800d000",
-            "virtual_start":  "0x2800d000",
+            "physical_start": "0x32a00000",
+            "virtual_start":  "0x32a00000",
             "size": "0x1000"
         },
         {
             "type": "io",
-            "physical_start": "0x30880000",
-            "virtual_start":  "0x30880000",
-            "size": "0x80000"
+            "physical_start": "0x32a10000",
+            "virtual_start":  "0x32a10000",
+            "size": "0x2000"
         },
         {
             "type": "virtio",
@@ -35,7 +35,7 @@
             "size": "0x200"
         }
     ],
-    "interrupts": [54, 76, 78, 116],
+    "interrupts": [54, 76, 78],
     "ivc_configs": [],
     "kernel_filepath": "./Image",
     "dtb_filepath": "./linux2.dtb",
