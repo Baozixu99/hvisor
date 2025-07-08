@@ -137,6 +137,8 @@ jlink-server:
 
 cp:
 	cp $(hvisor_bin) /mnt/d/Desktop/tftp/ft/
+e2000q:
+	cp $(hvisor_bin) /mnt/d/Desktop/tftp/e2000q/
 
 test-pre: download-test-img
 	chmod +x platform/$(ARCH)/$(BOARD)/test/runner.sh
