@@ -32,38 +32,29 @@ use super::{
 };
 
 pub fn cpu_start(cpuid: usize, start_addr: usize, opaque: usize) {
-    if cfg!(feature = "mpidr_phytium") {
-        let new_cpuid = match cpuid {
-            1 => {
-                0x201 
-            }
-            2 => {
-                0x00
-            }
-            3 => {
-                0x100
-            }
-            _ => {
-                panic!("Invalid cpuid: {}", cpuid);
-            }
-        };
-        psci::cpu_on(new_cpuid as u64, start_addr as _, opaque as _).unwrap_or_else(|err| {
-            println!("psci cpu_on failed: {:?}", err);
-            if let psci::error::Error::AlreadyOn = err {
-            } else {
-                panic!("can't wake up cpu {}", cpuid);
-            }
-        })
-    } else {
-        psci::cpu_on(cpuid as u64 | 0x80000000, start_addr as _, opaque as _).unwrap_or_else(|err| {
-            println!("psci cpu_on failed: {:?}", err);
-            if let psci::error::Error::AlreadyOn = err {
-            } else {
-                panic!("can't wake up cpu {}", cpuid);
-            }
-        })
-    }   
-}
+    let new_cpuid = match() {
+        _ if cfg!(feature = "mpidr_phytium") => match cpuid {
+            1 => 0x201,
+            2 => 0x00,
+            3 => 0x100,
+            _ => panic!("Invalid cpuid: {}", cpuid),
+        },
+        _ if cfg!(feature = "mpidr_e2000q") => match cpuid {
+            1 => 0x100,
+            2 => 0x200,
+            3 => 0x201,
+            _ => panic!("Invalid cpuid: {}", cpuid),
+        },
+        _ => cpuid as u64 | 0x80000000,
+    };
+    psci::cpu_on(new_cpuid, start_addr as _, opaque as _).unwrap_or_else(|err| {
+         println!("psci cpu_on failed: {:?}", err);
+        if let psci::error::Error::AlreadyOn = err {
+        } else {
+            panic!("can't wake up cpu {}", cpuid);
+        }
+    })
+}   
 
 #[repr(C)]
 #[derive(Debug)]
@@ -260,7 +251,17 @@ pub fn mpidr_to_cpuid(mpidr: u64) -> u64 {
         }
     }
 
-    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium")))]
+    #[cfg(feature = "mpidr_e2000q")]
+    {
+        match (mpidr & 0xffff) as u32 {
+            0x00 => 0,
+            0x100 => 1,
+            0x200 => 2,
+            0x201 => 3,
+            _ => panic!("Unknown MPIDR: {:#x}", mpidr),
+        }
+    }
+    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium",feature = )))]
     {
         mpidr & 0xff00ffffff
     }
