@@ -38,7 +38,7 @@
     "interrupts": [54, 76, 78],
     "ivc_configs": [],
     "kernel_filepath": "./Image",
-    "dtb_filepath": "./linux2.dtb",
+    "dtb_filepath": "./e2000q-linux2.dtb",
     "kernel_load_paddr": "0xb0400000",
     "dtb_load_paddr":   "0xb0000000",
     "entry_point":      "0xb0400000",

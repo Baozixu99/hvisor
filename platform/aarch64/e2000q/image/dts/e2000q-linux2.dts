@@ -9,8 +9,8 @@
 	model = "E2000Q edu Board";
 
 	aliases {
-		serial1 = "/soc/uart@2800d000";
-		ethernet3 = "/soc/ethernet@32012000";
+		// serial1 = "/soc/uart@2800d000";
+		// ethernet3 = "/soc/ethernet@32012000";
 	};
 
 	psci {
