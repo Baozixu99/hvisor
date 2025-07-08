@@ -51,9 +51,9 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 12] = [
     // ethernet0
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_IO,
-        physical_start: 0x3200c000,  
-        virtual_start: 0x3200c000,
-        size: 0x00002000,            // 8KB
+        physical_start: 0x32012000,  
+        virtual_start: 0x32012000,
+        size: 0x2000,          
     },
     // USB
     HvConfigMemoryRegion {
@@ -113,8 +113,8 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 12] = [
         size: 0x2000,           
     }
 ];
-//46-usb2,54-mailbox 64-hvisor,75-sata,87-net,104、105-mmc,116-uart,133、138-i2c,191-spi,
-pub const ROOT_ZONE_IRQS: [u32; 13] = [46,54, 64, 75, 76, 78, 87, 104, 105, 116, 133, 138, 191];
+//46-usb2,54-mailbox 64-hvisor,75-sata,100-net,104、105-mmc,116-uart,133、138-i2c,191-spi,
+pub const ROOT_ZONE_IRQS: [u32; 13] = [46,54, 64, 75, 76, 78,100,104, 105, 116, 133, 138, 191];
 
 pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gicd_base: 0x30800000,  

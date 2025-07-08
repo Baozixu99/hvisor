@@ -1162,7 +1162,8 @@
 		};
 
 		ethernet@32012000 {
-			compatible = "phytium,gem";
+			// compatible = "phytium,gem";
+			compatible = "cdns,phytium-gem-1.0";
 			reg = <0x00 0x32012000 0x00 0x2000>;
 			interrupts = <0x00 0x44 0x04 0x00 0x45 0x04 0x00 0x46 0x04 0x00 0x47 0x04>;
 			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";

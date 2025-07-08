@@ -261,7 +261,7 @@ pub fn mpidr_to_cpuid(mpidr: u64) -> u64 {
             _ => panic!("Unknown MPIDR: {:#x}", mpidr),
         }
     }
-    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium",feature = )))]
+    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium",feature = "mpidr_e2000q" )))]
     {
         mpidr & 0xff00ffffff
     }
