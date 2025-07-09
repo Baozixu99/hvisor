@@ -764,3 +764,331 @@ match mmio.address {
 ```
 
 这样，Linux 内核在扫描时可以完整遍历所有 CPU 的 GICR 区域，正确识别每个 CPU 的 Redistributor，从而完成 GICv3 的初始化。修改完成后重新构建并运行 hvisor，Linux 内核成功完成了 GIC 初始化流程，能够识别所有 CPU 的 Redistributor 区域。串口输出完整，系统响应正常，Virtio 设备中断也能够正常注入。
+
+#### 3.1.10 翰博薇e2000q教育开发板适配
+
+飞腾派 CPU 是基于腾珑 E2000 系列的定制版本，而翰博薇开发板采用标准的腾珑 E2000Q CPU。在完成飞腾派的 `hvisor` 适配后，我们着手适配翰博薇E2000Q 开发板。初期适配工作举步维艰，主要原因是翰博薇未开源其 U-Boot 和设备树，也缺乏相关技术文档。这使得我们无法直接获取适配所需的关键文件。为获取适配所需的**U-Boot 固件**及**设备树二进制文件**，我们采取了**逆向工程**手段：利用 **SP20B 编程器**，直接从翰博薇开发板的 **Flash 存储芯片**中成功提取了这些关键文件，为 `hvisor` 在翰博薇 E2000Q 开发板上的适配奠定了基础。**同时在适配过程中，也遇到了很多问题**：
+
+##### **1.启动hvisor时卡在starting kernel**
+
+在适配 `hvisor` 到翰博薇 E2000Q 教育开发板时，我们遇到了系统在显示 "starting kernel" 后便**无任何输出且停止响应**的问题。初步排查时，我们曾怀疑是串口配置不正确。然而，考虑到我们已成功适配飞腾派，并且设备树中串口配置与飞腾派相同，因此很快排除了串口问题的可能性。
+
+在此期间，我们一度怀疑通过 Flash 编程器逆向提取的设备树文件不完整，可能缺失关键节点。为进一步定位问题，我们尝试在 E2000Q 裸机环境下启动 Linux。在裸机启动过程中，我们意外发现，E2000Q 平台默认的**第一个启动 CPU 的 MPIDR 值为 `0x00`**。因为E2000Q 与飞腾派在处理器拓扑结构上一样，我们此前从未怀疑过启动顺序。然而，飞腾派上默认第一个启动的 CPU MPIDR 通常是 `0x200`（我们推测这是固件层面预设的），这与 `hvisor` 期望的第一个启动 CPU 之间产生了冲突，从而导致 `hvisor` 无法完成初始化，进而无法启动内核。为了解决**CPU MPIDR 冲突**问题，我们为 `hvisor` 添加了针对 E2000Q 特性的 `mpidr_e2000q` 支持。具体实现中，我们通过修改 `boot_cpuid_get` 函数来确保 `hvisor` 能够正确识别并处理 E2000Q 平台上的 CPU MPIDR 映射关系。
+
+```rust
+// 当启用 mpidr_e2000q 特性时编译此段代码
+#[cfg(feature = "mpidr_e2000q")]
+#[naked]
+#[no_mangle]
+pub unsafe extern "C" fn boot_cpuid_get() {
+    core::arch::asm!(
+        "
+        mrs x17, mpidr_el1
+        and x17, x17, #0xffff  	// low 16位
+        
+        
+        cmp x17, #0x00         	// cpu0
+        b.eq 3f
+        cmp x17, #0x100       	// cpu1
+        b.eq 4f
+        
+        // 再检查其他核心
+        cmp x17, #0x200       	// cpu2
+        b.eq 1f
+        cmp x17, #0x201         // cpu3
+        b.eq 2f
+        
+        mov x17, #-1            // unknown CPU
+        b 5f
+        
+    1:  mov x17, #2; b 5f     	// back 2
+    2:  mov x17, #3; b 5f     	// back 3
+    3:  mov x17, #0; b 5f      	// back 0
+    4:  mov x17, #1            	// back 1
+    5:  ret
+        ",
+        options(noreturn)
+    );
+}
+```
+
+##### **2.多核启动时MPIDR 映射错误**
+
+在 `hvisor` 启动过程中，我们遇到了 "psci cpu on failed: InvalidParameters" 错误。这个错误明确指出，当前逻辑 CPU ID 未能正确映射到物理 CPU 的 MPIDR 值，导致通过 PSCI接口启动次核时失败。该问题源于不同 ARM 架构实现中，CPU 的逻辑 ID 与其物理 MPIDR 之间的映射关系可能存在差异。飞腾 E2000Q 平台有其特定的 MPIDR 编码规则，这与飞腾派等其他平台不同。为了确保 `hvisor` 能正确管理和启动 E2000Q 上的所有 CPU 核心，我们添加了如下针对 `mpidr_e2000q` 特性的适配：
+
+- `cpu_start` 函数：逻辑 CPU ID 到物理 MPIDR 的映射
+
+  `cpu_start` 函数负责通过 PSCI 服务的 `cpu_on` 命令启动指定的 CPU 核心。为了正确调用 PSCI，需要将 `hvisor` 内部使用的逻辑 CPU ID 转换成目标物理 CPU 的实际 MPIDR 值。
+
+```rust
+pub fn cpu_start(cpuid: usize, start_addr: usize, opaque: usize) {
+    let new_cpuid = match() {
+        _ if cfg!(feature = "mpidr_phytium") => match cpuid {
+            1 => 0x201,
+            2 => 0x00,
+            3 => 0x100,
+            _ => panic!("Invalid cpuid: {}", cpuid),
+        },
+        _ if cfg!(feature = "mpidr_e2000q") => match cpuid {
+            1 => 0x100,
+            2 => 0x200,
+            3 => 0x201,
+            _ => panic!("Invalid cpuid: {}", cpuid),
+        },
+        _ => cpuid as u64 | 0x80000000,
+    };
+    psci::cpu_on(new_cpuid, start_addr as _, opaque as _).unwrap_or_else(|err| {
+         println!("psci cpu_on failed: {:?}", err);
+        if let psci::error::Error::AlreadyOn = err {
+        } else {
+            panic!("can't wake up cpu {}", cpuid);
+        }
+    })
+}   
+```
+
+- `mpidr_to_cpuid` 函数：物理 MPIDR 到逻辑 CPU ID 的逆向映射
+
+  该函数用于将从硬件寄存器（如 `MPIDR_EL1`）中读取到的物理 MPIDR 值转换为 `hvisor` 内部使用的逻辑 CPU ID，这用于识别当前运行的 CPU 是哪个逻辑核心。
+
+```rust
+pub fn mpidr_to_cpuid(mpidr: u64) -> u64 {
+    #[cfg(feature = "mpidr_rockchip")]
+    {
+        (mpidr >> 8) & 0xff
+    }
+
+    #[cfg(feature = "mpidr_phytium")]
+    {
+        match (mpidr & 0xffff) as u32 {
+            0x00 => 2,
+            0x100 => 3,
+            0x200 => 0,
+            0x201 => 1,
+            _ => panic!("Unknown MPIDR: {:#x}", mpidr),
+        }
+    }
+
+    #[cfg(feature = "mpidr_e2000q")]
+    {
+        match (mpidr & 0xffff) as u32 {
+            0x00 => 0,
+            0x100 => 1,
+            0x200 => 2,
+            0x201 => 3,
+            _ => panic!("Unknown MPIDR: {:#x}", mpidr),
+        }
+    }
+    #[cfg(not(any(feature = "mpidr_rockchip", feature = "mpidr_phytium",feature = "mpidr_e2000q" )))]
+    {
+        mpidr & 0xff00ffffff
+    }
+}
+
+
+```
+
+- `arch_send_event` 函数：跨 CPU 核发送 SGI 中断
+
+  `arch_send_event` 函数用于向目标 CPU 发送软件生成中断（SGI）。在 GICv3 (Generic Interrupt Controller v3) 架构下，发送 SGI 需要构建一个包含目标 CPU 的 Affinity 级别和 SGI 编号的 `ICC_SGI1R_EL1` 寄存器值。由于在发送端无法直接访问目标 CPU 的完整 MPIDR 寄存器，我们通过逆向映射来从逻辑 `cpu_id` 推导出目标 Affinity 值。考虑到不同 CPU 实现（如 RK3568 和 RK3588）在 MPIDR 编码 Affinity 值上的差异，这里使用了条件编译来处理平台特定的 `cpu_id` 到中断目标 Affinity 的映射。
+
+```rust
+  pub fn arch_send_event(cpu_id: u64, sgi_num: u64) {
+      #[cfg(feature = "gicv3")]
+      {
+          /*Actually, the value passed to ICC_SGI1R_EL1 should be derived from
+          the MPIDR of the target CPU. However, since we cannot access this
+          register on the sender side, we have reverse-engineered a value
+          here using the cpu_id.
+          Due to differences in how some CPU implementations (e.g., RK3568 and RK3588)
+          encode affinity values in MPIDR, we use conditional compilation to handle
+          platform-specific mappings between cpu_id and interrupt target affinity.
+          */
+          let aff3: u64 = 0 << 48;
+          let aff2: u64 = 0 << 32;
+          let mut aff1: u64;
+          let mut target_list: u64;
+          let irm: u64 = 0 << 40;
+          let sgi_id: u64 = sgi_num << 24;
+      
+          #[cfg(feature = "mpidr_rockchip")]
+          {
+              aff1 = cpu_id << 16;
+              target_list = 1 << 0;  
+          }
+      
+          #[cfg(feature = "mpidr_phytium")]
+          {
+              let mpidr: u64 = match cpu_id {
+                  0 => 0x200,
+                  1 => 0x201,
+                  2 => 0x000,
+                  3 => 0x100,
+                  _ => panic!("Unsupported cpu_id: {}", cpu_id),
+              };
+  
+              let aff0 = (mpidr >> 0) & 0xff;
+              aff1 = ((mpidr >> 8) & 0xff) << 16;
+              let aff2 = ((mpidr >> 16) & 0xff) << 32;
+              let aff3 = ((mpidr >> 32) & 0xff) << 48;
+  
+              target_list = 1 << aff0;
+              debug!("send sgi to cpu_id: {}, mpidr=0x{:x}, sgi_num: {}", cpu_id, mpidr, sgi_num);
+          }
+          
+          #[cfg(feature = "mpidr_e2000q")]
+          {
+              let mpidr: u64 = match cpu_id {
+                  0 => 0x00,
+                  1 => 0x100,
+                  2 => 0x200,
+                  3 => 0x201,
+                  _ => panic!("Unsupported cpu_id: {}", cpu_id),
+              };
+  
+              let aff0 = (mpidr >> 0) & 0xff;
+              aff1 = ((mpidr >> 8) & 0xff) << 16;
+              let aff2 = ((mpidr >> 16) & 0xff) << 32;
+              let aff3 = ((mpidr >> 32) & 0xff) << 48;
+  
+              target_list = 1 << aff0;
+              debug!("send sgi to cpu_id: {}, mpidr=0x{:x}, sgi_num: {}", cpu_id, mpidr, sgi_num);
+          }
+          #[cfg(not(any(
+              feature = "mpidr_rockchip", 
+              feature = "mpidr_phytium",
+              feature = "mpidr_e2000q"
+          )))]
+          {
+              aff1 = 0 << 16;
+              target_list = 1 << cpu_id;
+          }
+      
+          let val: u64 = aff3 | aff2 | aff1 | irm | sgi_id | target_list;
+          write_sysreg!(icc_sgi1r_el1, val);
+          debug!("write sgi sys value = {:#x}", val);
+      }
+      #[cfg(feature = "gicv2")]
+      {
+          let sgi_id: u64 = sgi_num;
+          let target_list: u64 = 1 << cpu_id;
+          set_sgi_irq(sgi_id as usize, target_list as usize, 0);
+      }
+  }
+```
+
+##### **3.解决内存节点定义错误导致的 Linux 启动失败**
+
+```c#
+[WARN  0] (hvisor::memory::mmio:96) Zone 0 unhandled mmio fault MMIOAccess {
+    address: 0x27ffff000,
+    size: 0x1,
+    is_write: true,
+    value: 0xfffffdfffe437000,
+}
+[ERROR 0] (hvisor::arch::aarch64::trap:243) mmio_handle_access: [src/memory/mmio.rs:97:13] Invalid argument
+[ERROR 0] (hvisor::panic:24) panic occurred: PanicInfo {
+    payload: Any { .. },
+    message: Some(
+        root zone has some error,
+    ),
+    location: Location {
+        file: "src/zone.rs",
+        line: 292,
+        col: 9,
+    },
+    can_unwind: true,
+    force_no_backtrace: false,
+}
+```
+
+这些错误信息unhandled mmio fault` 和 `Invalid argument，表示`hvisor` 在处理内存映射输入/输出 (MMIO) 访问时遇到了问题，最终在内存区域管理 (`src/zone.rs`) 中触发了 panic。这通常是由于操作系统或管理程序尝试访问未映射或权限不正确的内存地址所致。经过深入排查，我们发现问题出在设备树中 `memory` 节点的定义。通过 `dtc` 工具将逆向获取的 `.dtb` 文件导出为 `.dts` 文本格式后，我们观察到原始 `memory` 节点的定义如下所示：
+
+```rust
+//memory@00 {
+//	device_type = "memory";
+//	reg = <0x00 0x80000000 0x02 0x00>;
+//};
+```
+
+该 `reg` 属性定义了一个从物理地址 `0x00` 开始、大小为 `0x2_0000_0000` 字节的内存区域，这等同于 **8GB** 内存。然而，实际的翰博薇 E2000Q 教育开发板**仅配备 4GB 内存**。这种不正确的内存范围定义导致 Linux 内核在启动时尝试访问超出实际物理内存边界的地址，进而触发了 `hvisor` 的 MMIO 错误和随后的 panic。
+
+为了解决此问题，我们将设备树中 `memory` 节点的 `reg` 属性修改为与开发板实际内存容量相匹配的值：
+
+```c
+memory@80000000 {
+	device_type = "memory";
+	reg = <0x0 0x80000000 0x00 0x80000000>;
+};
+```
+
+##### **4.加载hvisor.ko内核失败**
+
+在成功启动 Root Linux 后，我们尝试加载 `hvisor.ko` 内核模块以启动 Non-Root Linux，但遇到了如下错误：
+
+```shell
+root@(none):/home# insmod hvisor.ko
+[   12.524631] hvisor: loading out-of-tree module taints kernel.
+[   12.531169] irq: type mismatch, failed to map hwirq-64 for interrupt-controller@30800000!
+[   12.539430] hvisor cannot register IRQ, err is -22
+insmod: ERROR: could not insert module hvisor.ko: Invalid parameters
+```
+
+错误日志显示 `irq: type mismatch, failed to map hwirq-64` 和 `hvisor cannot register IRQ, err is -22`，明确指出 `hvisor.ko` 在注册中断时因中断类型不匹配而失败，导致模块无法加载（错误码 -22，即 `EINVAL`，参数无效）。
+
+冲突的设备树节点定义如下：
+
+```rust
+usb2@31800000 {
+            compatible = "phytium,e2000-usb2";
+            reg = <0x00 0x31800000 0x00 0x80000 0x00 0x31990000 0x00 0x10000>;
+            interrupts = <0x00 0x20 0x04>; // <-- 此处中断号为 0x20
+            status = "ok";
+            dr_mode = "host";
+        };
+
+hvisor_virtio_device {
+        compatible = "hvisor";
+        interrupt-parent = <0x01>;
+        interrupts = <0x00 0x20 0x01>; // <-- 此处中断号也为 0x20
+    };
+```
+
+从上述配置中可以看到，`usb2` 设备和 `hvisor_virtio_device` 都尝试使用中断号 `0x20`。在 GIC体系中，中断号是唯一的资源标识符。当两个不同的设备请求注册同一个中断号时，就会导致冲突并阻止模块的正常加载。由于当前阶段尚无需使用 USB2 设备，我们采取的临时解决方案是禁用设备树中的 `usb2@31800000` 节点，以解除中断号冲突。通过将 `usb2` 节点的 `status` 属性设置为 `"disabled"`，可以避免其在内核启动时注册该中断。完成此修改后，`hvisor.ko` 模块得以成功加载，未来若需启用 USB2 功能，则需重新为hvisor_virtio_device分配设备中断号。
+
+##### 5.Root Linux 网络服务适配
+
+在为 Root Linux 配置网络时，我们尝试使用 `ifconfig eth0 192.168.137.2` 命令，但系统返回了 "`SIOCSIFADDR: No such device`" 和 "`eth0: ERROR while getting interface flags: No such device`" 的错误。这表明以太网接口 `eth0` 未被内核成功识别和初始化。我们首先检查了设备树中网络设备的定义：
+
+```shell
+		ethernet@32012000 {
+			compatible = "phytium,gem";
+			reg = <0x00 0x32012000 0x00 0x2000>;
+			interrupts = <0x00 0x44 0x04 0x00 0x45 0x04 0x00 0x46 0x04 0x00 0x47 0x04>;
+			clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
+			clocks = <0x13 0x14 0x14 0x13>;
+			magic-packet;
+			status = "okay";
+			phy-mode = "sgmii";
+			use-mii;
+		};
+```
+
+尽管设备树中明确定义了网络设备 `ethernet@32012000` 且 `status` 属性为 `"okay"`，但内核仍未能识别它。这使我们怀疑当前的 Linux 内核可能缺少针对 `"phytium,gem"` 这个 `compatible` 字符串的相应驱动程序。为了验证这一猜测并寻找正确的驱动匹配，我们查阅了飞腾派（该平台网络直通功能正常）的网络设备节点定义。我们发现飞腾派使用的 `compatible` 字段内容为 `"cdns,phytium-gem-1.0"`。由于飞腾派的网络功能正常，推测 Linux 内核中很可能已经包含了这个驱动。基于此分析，我们将翰博薇 E2000Q 设备树中网络设备的 `compatible` 字段从 `"phytium,gem"` 修改为 `"cdns,phytium-gem-1.0"`：
+
+```rust
+ethernet@32012000 {
+            // compatible = "phytium,gem"; // 旧的兼容性字符串
+            compatible = "cdns,phytium-gem-1.0"; // 修改为与现有内核驱动匹配的兼容性字符串
+            reg = <0x00 0x32012000 0x00 0x2000>;
+            interrupts = <0x00 0x44 0x04 0x00 0x45 0x04 0x00 0x46 0x04 0x00 0x47 0x04>;
+            clock-names = "pclk\0hclk\0tx_clk\0tsu_clk";
+            clocks = <0x13 0x14 0x14 0x13>;
+            magic-packet;
+            status = "okay";
+            phy-mode = "sgmii";
+            use-mii;
+        };
+```
+
+重新启动 Root Linux 后，以太网接口 `eth0` 被内核成功识别和初始化，网络服务得以正常配置和使用。这证实了问题确实是由设备树中的 `compatible` 字符串与内核驱动不匹配所导致。
