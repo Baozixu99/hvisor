@@ -31,6 +31,7 @@ pub const IPI_EVENT_WAKEUP_VIRTIO_DEVICE: usize = 3;
 pub const IPI_EVENT_CLEAR_INJECT_IRQ: usize = 4;
 pub const IPI_EVENT_UPDATE_HART_LINE: usize = 5;
 pub const IPI_EVENT_SEND_IPI: usize = 6;
+pub const IPI_EVENT_SHM_SIGNAL: usize = 7;
 
 static EVENT_MANAGER: Once<EventManager> = Once::new();
 
@@ -149,6 +150,15 @@ pub fn check_events() -> bool {
             // While events above will inject external interrupt.
             use crate::arch::ipi::arch_ipi_handler;
             arch_ipi_handler();
+            true
+        }
+        Some(IPI_EVENT_SHM_SIGNAL) => {
+            info!("cpu {} received shm signal", cpu_data.id);
+            // Inject a specific interrupt to the current zone for SHM signaling
+            // You can customize the interrupt number based on your needs
+            const SHM_SIGNAL_IRQ: usize = 32 + 0x2a;
+            inject_irq(SHM_SIGNAL_IRQ, false);
+            info!("cpu {} injected SHM signal IRQ {}", cpu_data.id, SHM_SIGNAL_IRQ);
             true
         }
         _ => false,

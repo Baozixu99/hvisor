@@ -50,6 +50,7 @@ numeric_enum! {
         HvClearInjectIrq = 20,
         HvIvcInfo = 5,
         HvConfigCheck = 6,
+        HvShmSignal = 10,
     }
 }
 pub const SGI_IPI_ID: u64 = 7;
@@ -100,6 +101,7 @@ impl<'a> HyperCall<'a> {
                 #[cfg(target_arch = "aarch64")]
                 HyperCallCode::HvIvcInfo => self.hv_ivc_info(arg0),
                 HyperCallCode::HvConfigCheck => self.hv_zone_config_check(arg0 as *mut u64),
+                HyperCallCode::HvShmSignal => self.hv_shm_signal(arg0, arg1),
                 _ => {
                     warn!("hypercall id={} unsupported!", code as u64);
                     Ok(0)
@@ -365,5 +367,52 @@ impl<'a> HyperCall<'a> {
             }
         }
         HyperCallResult::Ok(core::cmp::min(cnt as _, zones_info.len()))
+    }
+        /// Handle shared memory signal hypercall
+    /// arg0: target_zone_id - the zone to send signal to
+    /// arg1: service_id - the service identifier (can be used for different signal types)
+    fn hv_shm_signal(&mut self, target_zone_id: u64, service_id: u64) -> HyperCallResult {
+        info!(
+            "hv_shm_signal: target_zone_id={}, service_id={}",
+            target_zone_id, service_id
+        );
+
+        // Check if the current zone is root zone (only root zone can send signals)
+        if !is_this_root_zone() {
+            return hv_result_err!(EPERM, "Only root zone can send shm signals");
+        }
+
+        // Find the target zone
+        let target_zone = match find_zone(target_zone_id as usize) {
+            Some(zone) => zone,
+            None => {
+                return hv_result_err!(ENOENT, "Target zone not found");
+            }
+        };
+
+        // Get the target zone's CPU set
+        let zone_read = target_zone.read();
+        let target_cpus = zone_read.cpu_set.clone();
+        drop(zone_read);
+
+        // Send IPI event to all CPUs in the target zone
+        use crate::event::{send_event, IPI_EVENT_SHM_SIGNAL};
+        let mut signals_sent = 0;
+        
+        for cpu_id in target_cpus.iter() {
+            let target_cpu = get_cpu_data(cpu_id);
+            if target_cpu.arch_cpu.power_on {
+                send_event(cpu_id, SGI_IPI_ID as _, IPI_EVENT_SHM_SIGNAL);
+                signals_sent += 1;
+                info!("Sent SHM signal to CPU {} in zone {}", cpu_id, target_zone_id);
+            }
+        }
+
+        if signals_sent == 0 {
+            return hv_result_err!(ENODEV, "No active CPUs in target zone");
+        }
+
+        info!("Successfully sent SHM signal to {} CPUs in zone {}", signals_sent, target_zone_id);
+        HyperCallResult::Ok(signals_sent)
     }
 }

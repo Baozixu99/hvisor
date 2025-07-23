@@ -335,6 +335,16 @@
 		reg = <0x0 0xa003800 0x0 0x200>;
 		compatible = "virtio,mmio";
 	};
+	hvisor_virtio_device {
+		compatible = "hvisor";
+		interrupt-parent = <0x01>;
+		interrupts = <0x00 0x20 0x01>;
+	};
+	hvisor_shm_device {
+		compatible = "hvisor";
+		interrupt-parent = <0x01>;
+		interrupts = <0x00 0x2A 0x01>;
+	};
 	chosen {
 		// stdout-path = "serial1:115200n8";
 		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";
@@ -350,7 +360,15 @@
 		device_type = "memory";
 		reg = <0x0 0xb0000000 0x00 0x30000000>;
 	};
-
+	reserved-memory {
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+    	shm@e0000000 {
+        	no-map;
+        	reg = <0x00 0xde000000 0x00 0x00420000>;
+    	};
+	};
 	__symbols__ {
 		scmi = "/firmware/scmi";
 		scmi_dvfs = "/firmware/scmi/protocol@13";
