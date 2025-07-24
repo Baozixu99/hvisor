@@ -35,7 +35,7 @@
             "size": "0x200"
         }
     ],
-    "interrupts": [54, 76, 78],
+    "interrupts": [54,64,74,76, 78],
     "ivc_configs": [],
     "kernel_filepath": "./Image",
     "dtb_filepath": "./linux2.dtb",
