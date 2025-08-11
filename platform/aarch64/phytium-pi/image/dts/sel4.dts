@@ -231,39 +231,39 @@
 		dma-coherent;
 		ranges;
 		phandle = <0x1a>;
-		mmc@28000000 {
-			compatible = "phytium,mci";
-			reg = <0x00 0x28000000 0x00 0x1000>;
-			interrupts = <0x00 0x48 0x04>;
-			clocks = <0x0a>;
-			clock-names = "phytium_mci_clk";
-			status = "okay";
-			bus-width = <0x04>;
-			max-frequency = <0x2faf080>;
-			cap-sdio-irq;
-			cap-sd-highspeed;
-			no-mmc;
-			phandle = <0x1b>;
-		};
+		// mmc@28000000 {
+		// 	compatible = "phytium,mci";
+		// 	reg = <0x00 0x28000000 0x00 0x1000>;
+		// 	interrupts = <0x00 0x48 0x04>;
+		// 	clocks = <0x0a>;
+		// 	clock-names = "phytium_mci_clk";
+		// 	status = "okay";
+		// 	bus-width = <0x04>;
+		// 	max-frequency = <0x2faf080>;
+		// 	cap-sdio-irq;
+		// 	cap-sd-highspeed;
+		// 	no-mmc;
+		// 	phandle = <0x1b>;
+		// };
 
-		mmc@28001000 {
-			compatible = "phytium,mci";
-			reg = <0x00 0x28001000 0x00 0x1000>;
-			interrupts = <0x00 0x49 0x04>;
-			clocks = <0x0a>;
-			clock-names = "phytium_mci_clk";
-			status = "okay";
-			bus-width = <0x04>;
-			max-frequency = <0x2faf080>;
-			#sd-uhs-sdr25;
-			#sd-uhs-sdr50;
-			cap-sdio-irq;
-			cap-sd-highspeed;
-			no-mmc;
-			no-sd;
-			non-removable;
-			phandle = <0x1c>;
-		};
+		// mmc@28001000 {
+		// 	compatible = "phytium,mci";
+		// 	reg = <0x00 0x28001000 0x00 0x1000>;
+		// 	interrupts = <0x00 0x49 0x04>;
+		// 	clocks = <0x0a>;
+		// 	clock-names = "phytium_mci_clk";
+		// 	status = "okay";
+		// 	bus-width = <0x04>;
+		// 	max-frequency = <0x2faf080>;
+		// 	#sd-uhs-sdr25;
+		// 	#sd-uhs-sdr50;
+		// 	cap-sdio-irq;
+		// 	cap-sd-highspeed;
+		// 	no-mmc;
+		// 	no-sd;
+		// 	non-removable;
+		// 	phandle = <0x1c>;
+		// };
 		uart@2800d000 {
 			compatible = "arm,pl011\0arm,primecell";
 			reg = <0x00 0x2800d000 0x00 0x1000>;
@@ -346,13 +346,8 @@
 		interrupts = <0x00 0x2A 0x01>;
 	};
 	chosen {
-		stdout-path = "serial1:115200n8";
-		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait";
-		// stdout-path = "/virtio_mmio@a003800";
-		// bootargs = "clk_ignore_unused earlycon=virtio,mmio,0xa003800 console=hvc0 root=/dev/vda rootwait rw init=/bin/sh";
 		// stdout-path = "serial1:115200n8";
-		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/vda rw rootwait init=/bin/sh";
-
+		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200";
 	};
 
 
@@ -360,15 +355,15 @@
 		device_type = "memory";
 		reg = <0x0 0xc0000000 0x00 0x30000000>;
 	};
-	reserved-memory {
-		#address-cells = <0x02>;
-		#size-cells = <0x02>;
-		ranges;
-    	shm@e0000000 {
-        	no-map;
-        	reg = <0x00 0xde000000 0x00 0x00420000>;
-    	};
-	};
+	//reserved-memory {
+	//	#address-cells = <0x02>;
+	//	#size-cells = <0x02>;
+	//	ranges;
+    	//shm@e0000000 {
+        //	no-map;
+        //	reg = <0x00 0xde000000 0x00 0x00420000>;
+    	//};
+	//};
 	__symbols__ {
 		scmi = "/firmware/scmi";
 		scmi_dvfs = "/firmware/scmi/protocol@13";
@@ -389,8 +384,8 @@
 		sysclk_600mhz = "/clocks/clk600mhz";
 		sysclk_1200mhz = "/clocks/clk1200mhz";
 		soc = "/soc";
-		mmc0 = "/soc/mmc@28000000";
-		mmc1 = "/soc/mmc@28001000";
+		// mmc0 = "/soc/mmc@28000000";
+		// mmc1 = "/soc/mmc@28001000";
 		uart1 = "/soc/uart@2800d000";
 		mbox = "/soc/mailbox@32a00000";
 		sram = "/soc/sram@32a10000";
