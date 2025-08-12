@@ -62,8 +62,9 @@
 
 > 以下为辅助理解项目内容的额外资源：
 
-- **演示视频**：百度网盘链接: https://pan.baidu.com/s/1eGo6nAFvq4dmWMnx2UHkCA?pwd=6wqn 提取码: 6wqn
-- **项目PPT**：网盘链接: https://pan.baidu.com/s/1qRPlp4A9yQh5i-rnaRcAVg?pwd=fc8m 提取码: fc8m
+- **演示视频**：百度网盘链接: https://pan.baidu.com/s/1_1W7Ip2kRFOxlhY51sruAQ?pwd=6mnq 提取码: 6mnq
+- **项目PPT**：网盘链接: https://pan.baidu.com/s/1znSUTrtiFW81QjFqRPBV8A?pwd=q9ur 提取码: q9ur
+
 
 ## 总体架构图
 
@@ -158,7 +159,7 @@ platform
 #### 2.3 支持多种 Guest OS 的运行与集成
 
 - seL4
-- genode+hw
+- Genode+hw
 
 #### 2.4 实现虚拟机间通信框架
 - CPU虚拟化通过模拟核间中断（IPI）和共享内存机制实现跨虚拟机通信，借鉴现有OpenatAMP核间通信框架的思想进行扩展和优化。
