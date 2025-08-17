@@ -128,7 +128,7 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 11] = [
        // }, // serial
 ];
 //46-usb2,54-mailbox 64-usb2,87-net,104、105-mmc,116-uart,133、138-i2c,191-spi
-pub const ROOT_ZONE_IRQS: [u32; 13] = [46,54, 64, 75, 76, 78, 87, 104, 105, 116, 133, 138, 191];
+pub const ROOT_ZONE_IRQS: [u32; 14] = [46,54, 64,65,75, 76, 78, 87, 104, 105, 116, 133, 138, 191];
 
 pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gicd_base: 0x30800000,  
@@ -146,4 +146,16 @@ pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gits_size: 0x0,
 };
 
-pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];
+// pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 0] = [];
+pub const ROOT_ZONE_IVC_CONFIG: [HvIvcConfig; 1] = [
+    HvIvcConfig {
+        ivc_id: 0,
+        peer_id: 0,
+        control_table_ipa: 0x60000000,
+        shared_mem_ipa: 0x60001000,
+        rw_sec_size: 0,
+        out_sec_size: 0x1000,
+        interrupt_num: 65,
+        max_peers: 2,
+    },
+];

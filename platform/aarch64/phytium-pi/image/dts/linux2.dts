@@ -345,6 +345,11 @@
 		interrupt-parent = <0x01>;
 		interrupts = <0x00 0x2A 0x01>;
 	};
+	hvisor_ivc_device {
+        compatible = "hvisor";
+        interrupt-parent = <0x01>;
+        interrupts = <0x00 0x22 0x01>;
+        };
 	chosen {
 		// stdout-path = "serial1:115200n8";
 		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";

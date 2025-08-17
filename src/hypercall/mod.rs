@@ -398,16 +398,22 @@ impl<'a> HyperCall<'a> {
         // Send IPI event to all CPUs in the target zone
         use crate::event::{send_event, IPI_EVENT_SHM_SIGNAL};
         let mut signals_sent = 0;
-        
-        for cpu_id in target_cpus.iter() {
-            let target_cpu = get_cpu_data(cpu_id);
-            if target_cpu.arch_cpu.power_on {
-                send_event(cpu_id, SGI_IPI_ID as _, IPI_EVENT_SHM_SIGNAL);
-                signals_sent += 1;
-                info!("Sent SHM signal to CPU {} in zone {}", cpu_id, target_zone_id);
-            }
+        //向target zone内所有cpu发送信号
+        // for cpu_id in target_cpus.iter() {
+        //     let target_cpu = get_cpu_data(cpu_id);
+        //     if target_cpu.arch_cpu.power_on {
+        //         send_event(cpu_id, SGI_IPI_ID as _, IPI_EVENT_SHM_SIGNAL);
+        //         signals_sent += 1;
+        //         info!("Sent SHM signal to CPU {} in zone {}", cpu_id, target_zone_id);
+        //     }
+        // }
+        //只发送zone的CPU2
+        let target_cpu = get_cpu_data(2);
+        if target_cpu.arch_cpu.power_on {
+            send_event(2, SGI_IPI_ID as _, IPI_EVENT_SHM_SIGNAL);
+            signals_sent += 1;
+            info!("Sent SHM signal to CPU {} in zone {}", 2, target_zone_id);
         }
-
         if signals_sent == 0 {
             return hv_result_err!(ENODEV, "No active CPUs in target zone");
         }
