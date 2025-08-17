@@ -7,18 +7,9 @@
 
 ## 从内核赛到功能赛的追梦之旅
 
-带着本科期间未竟的内核开发理想，我们以研究生身份重返赛场。历时75天攻坚（2025.6.4-8.17），完成**飞腾平台Type-1 Hypervisor深度适配**的突破性成果——不仅实现赛题全部必选要求，更构建出**支持Linux/seL4异构虚拟机通信的轻量级虚拟化方案**。
+带着本科期间未竟的内核开发理想，我们以研究生身份重返赛场。项目历时**75**天（2025.6.4-8.17），其间我们完成了大量的开发与验证工作，我们累计修改代码修改量**超过6600行**，涉及**hvisor、hvisor-tool、sel4test三个仓库**，commit提交次数**60余次**，超过**1000次**SD卡插拔与测试。
 
-▸ 6000+行精炼代码 
-
-▸ 20+个关键技术问题攻破 
-
-▸ 60+次仓库提交 
-
-▸ 1000+次SD卡插拔测试
-
-每个数字背后都是无数次 **编码-上板-报错-调试** 的循环，最终实现了三大技术突破。
-
+本项目不仅**完成了赛题要求的全部必选内容**——将Type-1 Hypervisor（hvisor）成功适配并稳定运行于飞腾多个平台，还在此基础上**额外实现了多项内容**：
 1. **高效跨虚拟机通信机制 —— HyperAMP**
    - 基于**共享内存**与**核间中断 (IPI)** 构建统一通信通道
    - 支持**Root Linux ↔ Non-Root Linux**的双向安全通信。
@@ -87,7 +78,8 @@
 
 > 以下为辅助理解项目内容的额外资源：
 
-- **演示视频**：百度网盘链接: https://pan.baidu.com/s/1_1W7Ip2kRFOxlhY51sruAQ?pwd=6mnq 提取码: 6mnq
+- **演示视频1——hvisor完成赛题要求的所有功能演示**：百度网盘链接: https://pan.baidu.com/s/1_1W7Ip2kRFOxlhY51sruAQ?pwd=6mnq 提取码: 6mnq
+- **演示视频2——hvsior半实物仿真应用验证**：百度网盘链接: https://pan.baidu.com/s/1aEHYBctuHOwGJVC3rlHKMA?pwd=xphj 提取码: xphj
 - **项目PPT**：网盘链接: https://pan.baidu.com/s/1znSUTrtiFW81QjFqRPBV8A?pwd=q9ur 提取码: q9ur
 
 
@@ -113,6 +105,7 @@ platform
 │   ├── qemu-gicv2
 │   ├── qemu-gicv3
 │   ├── rk3568
+│   ├── e2000q                ← 本项目新增平台适配目录
 │   ├── phytium-pi            ← 本项目新增平台适配目录
 │   │   ├── board.rs          ← Zone0（root linux）配置逻辑
 │   │   ├── cargo
@@ -169,27 +162,23 @@ platform
 |     **8月10日**     | seL4作为 Guest OS 行于 hvisor 的 Non-Root 虚拟机中，并能通过HyperAMP读取到root linux写入共享内存中的数据 |
 | **8月11日-8月17日** |                      进行性能测试和优化                      |
 
-#### 2.2 运行 Benchmark 并进行性能分析与优化
+#### 2.2 实现虚拟机间通信框架
+- 通过核间中断（IPI）和共享内存机制实现跨虚拟机通信，借鉴现有OpenatAMP核间通信框架的思想进行扩展和优化。
+**Root Linux与Non Root Linux之间的通信过程：**
+<img src="docs/image/7-5.png" width="80%" />
+**Root Linux与seL4之间的通信过程**
+<img src="docs/image/7-6.png" width="80%" />
+#### 2.3运行 Benchmark 并进行性能分析与优化
 
 #### 计划测试集：
-可选的benchmark有Unixbench、Lmbench、IOzone、Cycletest等。
+benchmark有Unixbench、libc-bench。
+Unixbench的测试结果：
+<img src="docs/image/0-5.png" width="80%" />
 
-  #### **可能的性能优化点：**
+libc-bench的测试结果：
+<img src="docs/image/0-4.png" width="80%" />
 
--  两阶段地址翻译的加速优化
--  虚拟机动态内存分配减少内存空间的浪费
--  虚拟机间共享内存通信加速
--  中断注入和模拟的性能优化。
-
-#### 2.3 支持多种 Guest OS 的运行与集成
-
-- seL4
-- Genode+hw
-
-#### 2.4 实现虚拟机间通信框架
-- CPU虚拟化通过模拟核间中断（IPI）和共享内存机制实现跨虚拟机通信，借鉴现有OpenatAMP核间通信框架的思想进行扩展和优化。
-
-#### 2.5 进行GPU虚拟化技术的探索
+#### 2.4 进行GPU虚拟化技术的探索
 
 当前主流的GPU虚拟化技术分为三类：直通独占、直通共享和API转发，各有其适用场景和优缺点。
 - 直通独占（Pass-through Exclusive）将物理GPU完全分配给单个虚拟机，性能损失最小（通常低于3%），适合对图形性能要求极高的场景，如自动驾驶系统的实时渲染。但这种方案无法实现资源共享，在多个虚拟机需要图形加速时如同时运行仪表盘和娱乐系统，需要配置多个GPU，增加硬件成本。
