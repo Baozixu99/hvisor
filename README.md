@@ -141,7 +141,7 @@ platform
 | **6月6日**  | 完成 hvisor 核心功能启动，具备 Zone 创建与管理能力。 |
 | **6月15日** | 成功创建并启动 **Root Linux（Zone0）**，实现 console 显示与基本 shell 操作。 |
 | **6月22日** | 成功创建并启动 **Non-root Linux（Zone1）**，验证中断注入与 Virtio 设备初始化路径。 |
-| **6月27日** | 支持**Non-root Linux（Zone1）**使用Virtio Block、Virtio  Console、Virtio Net |
+| **6月27日** | 支持Non-root Linux（Zone1）使用Virtio Block、Virtio  Console、Virtio Net |
 
 ### 2.决赛阶段
 
@@ -169,7 +169,7 @@ platform
 <img src="docs/image/7-6.png" width="80%" />
 
 
-#### 2.3运行 Benchmark 并进行性能分析与优化
+#### 2.3 运行 Benchmark 并进行性能分析与优化
 
 #### 测试集：
 benchmark有Unixbench、libc-bench。
