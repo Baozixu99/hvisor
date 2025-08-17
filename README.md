@@ -159,6 +159,7 @@ platform
 
 #### 2.2 实现虚拟机间通信框架
 - 通过核间中断（IPI）和共享内存机制实现跨虚拟机通信，借鉴现有OpenatAMP核间通信框架的思想进行扩展和优化。
+
 **Root Linux与Non Root Linux之间的通信过程：**
 
 <img src="docs/image/7-5.png" width="80%" />
@@ -172,6 +173,7 @@ platform
 
 #### 计划测试集：
 benchmark有Unixbench、libc-bench。
+
 **Unixbench的测试结果：**
 
 <img src="docs/image/0-5.png" width="80%" />
