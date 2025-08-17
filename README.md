@@ -160,17 +160,24 @@ platform
 #### 2.2 实现虚拟机间通信框架
 - 通过核间中断（IPI）和共享内存机制实现跨虚拟机通信，借鉴现有OpenatAMP核间通信框架的思想进行扩展和优化。
 **Root Linux与Non Root Linux之间的通信过程：**
+
 <img src="docs/image/7-5.png" width="80%" />
+
 **Root Linux与seL4之间的通信过程：**
+
 <img src="docs/image/7-6.png" width="80%" />
+
+
 #### 2.3运行 Benchmark 并进行性能分析与优化
 
 #### 计划测试集：
 benchmark有Unixbench、libc-bench。
-Unixbench的测试结果：
+**Unixbench的测试结果：**
+
 <img src="docs/image/0-5.png" width="80%" />
 
-libc-bench的测试结果：
+**libc-bench的测试结果：**
+
 <img src="docs/image/0-4.png" width="80%" />
 
 #### 2.4 进行GPU虚拟化技术的探索
