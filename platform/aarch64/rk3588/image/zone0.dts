@@ -2220,9 +2220,11 @@
 	};
 
 	chosen {
+		stdout-path = "serial0:1500000n8";
 		// bootargs = "rw rootwait earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0 root=PARTUUID=614e0000-0000";
-		// bootargs = "rw rootwait earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0 root=/dev/mmcblk1p1";
-		bootargs = "rw rootwait earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0 root=/dev/sda1";
+		// bootargs = "rw rootwait earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0 root=/dev/mmcblk0p2";
+		// bootargs = "rw rootwait earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0,1500000 root=UUID=e09e76e4-2e41-4158-92f0-a4e80f951f63 loglevel=7 init=/bin/sh";
+		bootargs = "earlycon=uart8250,mmio32,0xfeb50000 console=ttyFIQ0,1500000 root=/dev/mmcblk1p2 rw rootwait loglevel=7";
 		phandle = <0x4bc>;
 	};
 };

@@ -365,7 +365,7 @@ fn handle_psci_smc(
     _arg1: u64,
     _arg2: u64,
 ) -> u64 {
-    println!("psci smc call: code={:#x?}, arg0={:#x?}", code, arg0);
+    debug!("psci smc call: code={:#x?}, arg0={:#x?}", code, arg0);
     match code {
         PsciFnId::PSCI_VERSION => PSCI_VERSION_1_1,
         PsciFnId::PSCI_CPU_SUSPEND_32 | PsciFnId::PSCI_CPU_SUSPEND_64 => {
