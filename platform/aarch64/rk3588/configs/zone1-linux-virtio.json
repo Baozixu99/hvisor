@@ -15,7 +15,7 @@
                         "addr": "0xff9d0000",
                         "len": "0x200",
                         "irq": 78,
-                        "img": "rootfs.ext4",
+                        "img": "rootfs2.ext4",
                         "status": "enable"
                     },
                     {
