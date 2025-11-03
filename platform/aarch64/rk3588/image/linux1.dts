@@ -2304,7 +2304,7 @@
 		dynamic-power-coefficient = <0xba6>;
 		upthreshold = <0x1e>;
 		downdifferential = <0x0a>;
-		status = "okay";
+		status = "disabled";
 		mali-supply = <0x63>;
 		mem-supply = <0x63>;
 		phandle = <0x60>;
@@ -11912,7 +11912,12 @@
 		status = "okay";
 		phandle = <0x4af>;
 	};
-
+	
+	hvisor_virtio_device {
+		compatible = "hvisor";
+		interrupt-parent = <0x01>;
+		interrupts = <0x00 0x20 0x01>;
+	};
 	__symbols__ {
 		spll = "/clocks/spll";
 		xin32k = "/clocks/xin32k";
