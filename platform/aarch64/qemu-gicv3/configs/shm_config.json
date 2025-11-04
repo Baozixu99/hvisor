@@ -1,0 +1,17 @@
+{
+  "shm_regions": [
+    {
+      "region_flag": "linux-2-npucore-buf",
+      "zone0_ram_ipa": "0x7e000000",
+      "zonex_ram_ipa": "0x7e000000",
+      "mem_size": "0x400000"
+    },
+    {
+      "region_flag": "linux-2-npucore-msg",
+      "zone0_ram_ipa": "0x7e400000",
+      "zonex_ram_ipa": "0x7e410000",
+      "mem_size": "0x1000"
+    }
+  ]
+}
+

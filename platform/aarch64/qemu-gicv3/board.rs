@@ -49,7 +49,8 @@ pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 3] = [
 
 // 35 36 37 38 -> pcie intx#
 // 65 -> ivc
-pub const ROOT_ZONE_IRQS: [u32; 9] = [33, 64, 77, 79, 35, 36, 37, 38, 65];
+//74 -> HyperAMP
+pub const ROOT_ZONE_IRQS: [u32; 10] = [33, 64, 74,77, 79, 35, 36, 37, 38, 65];
 
 pub const ROOT_ARCH_ZONE_CONFIG: HvArchZoneConfig = HvArchZoneConfig {
     gicd_base: 0x8000000,
