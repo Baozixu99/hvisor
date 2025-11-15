@@ -185,6 +185,8 @@ pub fn gicv3_handle_irq_el1() {
             } else if irq_id == 25 {
                 // maintenace interrupt
                 handle_maintenace_interrupt();
+            } else if irq_id == 30 {
+                // hypervisor timer interrupt（FreeRTOS needs this）
             } else if irq_id > 31 {
                 //inject phy irq
                 trace!("*** get spi_irq id = {}", irq_id);

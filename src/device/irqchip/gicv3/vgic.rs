@@ -254,6 +254,8 @@ fn vgicv3_handle_irq_ops(mmio: &mut MMIOAccess, irq: u32) -> HvResult {
 
 fn vgicv3_dist_misc_access(mmio: &mut MMIOAccess, gicd_base: usize) -> HvResult {
     let reg = mmio.address;
+    let is_igrpmodr = reg >= 0xD00 && reg <= 0xD7C;
+    
     if reg_range(GICDV3_PIDR0, 4, 4).contains(&reg)
         || reg_range(GICDV3_PIDR4, 4, 4).contains(&reg)
         || reg_range(GICDV3_CIDR0, 4, 4).contains(&reg)
@@ -261,10 +263,18 @@ fn vgicv3_dist_misc_access(mmio: &mut MMIOAccess, gicd_base: usize) -> HvResult 
         || reg == GICD_TYPER
         || reg == GICD_IIDR
         || reg == GICD_TYPER2
+        || is_igrpmodr
     {
         if !mmio.is_write {
-            // ignore write
-            mmio_perform_access(gicd_base, mmio);
+            // 读操作
+            if is_igrpmodr {
+                // IGRPMODR 在单一安全状态下应返回 0
+                mmio.value = 0;  // RAZ (Read As Zero)
+            } else {
+                mmio_perform_access(gicd_base, mmio);
+            }
+        } else {
+            // 写操作忽略
         }
     } else {
         todo!("vgicv3_dist_misc_access: MMIO.Address = {:#x?}", reg)
