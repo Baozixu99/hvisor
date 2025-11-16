@@ -1367,7 +1367,7 @@
 	chosen {
 		stdout-path = "serial1:115200n8";
 		// bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rootwait rw";
-		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait init=/bin/sh";
+		bootargs = "clk_ignore_unused console=ttyAMA1,115200 earlycon=pl011,0x2800d000,115200 root=/dev/mmcblk0p1 rw rootwait";
 		// bootargs = "console=ttyAMA1,115200 root=/dev/mmcblk0p1 rootwait rw init=/lib/systemd/systemd systemd.log_level=debug systemd.log_target=console systemd.unit=rescue.target";
 	
 		// bootargs = "console=ttyAMA1,115200 root=/dev/mmcblk0p1 rw rootwait init=/lib/systemd/systemd systemd.unit=multi-user.target systemd.log_level=debug systemd.log_target=console";
@@ -1397,6 +1397,10 @@
 		nonroot@b0000000 {
 			no-map;
 			reg = <0x00 0xb0000000 0x00 0x30000000>;
+		};
+		RTOS@e0000000 {
+			no-map;
+			reg = <0x00 0xe0000000 0x00 0x10000000>;
 		};
 	};
 

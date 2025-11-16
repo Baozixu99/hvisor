@@ -1,0 +1,77 @@
+{
+    "arch": "arm64",
+    "name": "OpenEuler Embedded",
+    "zone_id": 1,
+    "cpus": [3],
+    "memory_regions": [
+        {
+            "type": "ram",
+            "physical_start": "0xb0000000",
+            "virtual_start":  "0xb0000000",
+            "size": "0x30000000"
+        },
+        {
+            "type": "io",
+            "physical_start": "0x32a00000",
+            "virtual_start":  "0x32a00000",
+            "size": "0x1000"
+        },
+        {
+            "type": "io",
+            "physical_start": "0x32a10000",
+            "virtual_start":  "0x32a10000",
+            "size": "0x2000"
+        },
+        {
+            "type": "io",
+            "physical_start": "0x2800d000",
+            "virtual_start":  "0x2800d000",
+            "size": "0x1000"
+        },
+        {
+           "type": "virtio",
+           "physical_start": "0xa003600",
+           "virtual_start": "0xa003600",
+           "size": "0x200"
+        },
+        {
+            "type": "virtio",
+            "physical_start": "0xa003c00",
+            "virtual_start":  "0xa003c00",
+            "size": "0x200"
+        },
+        {
+            "type": "virtio",
+            "physical_start": "0xa003800",
+            "virtual_start": "0xa003800",
+            "size": "0x200"
+        }
+    ],
+    "interrupts": [54,64,66,74,75,76, 78,116],
+    "ivc_configs": [
+        {
+            "ivc_id": 0,
+            "peer_id": 1,
+            "control_table_ipa": "0x60000000",
+            "shared_mem_ipa": "0x60001000",
+            "rw_sec_size": "0",
+            "out_sec_size": "0x1000",
+            "interrupt_num": 66,
+            "max_peers": 2
+        }
+    ],
+    "kernel_filepath": "./Image",
+    "dtb_filepath": "./openEuler.dtb",
+    "kernel_load_paddr": "0xb0400000",
+    "dtb_load_paddr":   "0xb0000000",
+    "entry_point":      "0xb0400000",
+    "arch_config": {
+            "gic_version": "v3",
+            "gicd_base": "0x30800000",
+            "gicd_size": "0x20000",
+            "gicr_base": "0x30880000",
+            "gicr_size": "0x80000",
+            "gits_base": "0x0",
+            "gits_size": "0x0"
+    }
+}
