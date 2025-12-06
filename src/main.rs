@@ -65,6 +65,9 @@ mod zone;
 #[cfg(target_arch = "aarch64")]
 mod ivc;
 
+#[cfg(target_arch = "aarch64")]
+mod hyperamp;
+
 mod pci;
 
 #[cfg(test)]

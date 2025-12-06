@@ -214,6 +214,24 @@ pub fn zone_create(config: &HvZoneConfig) -> HvResult<Arc<RwLock<Zone>>> {
     zone.mmio_init(&config.arch_config);
     #[cfg(target_arch = "aarch64")]
     zone.ivc_init(config.ivc_config());
+
+    // Register HyperAMP MMIO control region for Root Zone (zone_id == 0)
+    // This enables MMIO-based interrupt triggering for inter-VM communication
+    #[cfg(target_arch = "aarch64")]
+    if zone_id == 0 {
+        const HYPERAMP_CTRL_PA: usize = 0x6e410000;
+        const HYPERAMP_CTRL_SIZE: usize = 0x1000; // 4KB
+        zone.mmio_region_register(
+            HYPERAMP_CTRL_PA,
+            HYPERAMP_CTRL_SIZE,
+            crate::hyperamp::mmio_hyperamp_handler,
+            HYPERAMP_CTRL_PA,
+        );
+        info!(
+            "Zone {} registered HyperAMP MMIO control region at {:#x}",
+            zone_id, HYPERAMP_CTRL_PA
+        );
+    }
     #[cfg(all(feature = "pci", target_arch = "aarch64"))]
     zone.pci_init(
         &config.pci_config,
