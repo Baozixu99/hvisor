@@ -44,21 +44,42 @@ pub fn mmio_hyperamp_handler(mmio: &mut MMIOAccess, base: usize) -> HvResult {
     let is_write = mmio.is_write;
     let offset = mmio.address;
     
+    // 处理读操作：返回固定值（预热读取不需要真实数据）
+    if !is_write {
+        // 读取任何字段都返回 0（避免卡住）
+        mmio.value = 0;
+        return Ok(());
+    }
+    
     // 只处理写入 ipi_trigger 字段的操作
-    if !is_write || offset != HYPERAMP_CTRL_IPI_TRIGGER_OFFSET {
-        // 其他字段的访问直接返回成功（忽略）
+    if offset != HYPERAMP_CTRL_IPI_TRIGGER_OFFSET {
+        // 写入非 ipi_trigger 字段：忽略
+        warn!(
+            "HyperAMP MMIO: non-trigger write [offset={:#x}, value={:#x}]",
+            offset, mmio.value
+        );
         return Ok(());
     }
     
     // 从 mmio.value 中解包参数（单次写入传递所有信息）
     // 格式：高 16 位为 target_zone_id，低 16 位为 service_id
     let packed_value = mmio.value as u32;
+    
+    // 预热写入检测：值为 0 时只建立页表，不注入中断
+    if packed_value == 0 {
+        // 预热成功，跳过中断注入
+        debug!("HyperAMP MMIO: warmup write detected [value=0], skipping interrupt injection");
+        return Ok(());
+    }
+    
     let target_zone_id = (packed_value >> 16) & 0xFFFF;
     let service_id = packed_value & 0xFFFF;
     
-    info!(
-        "HyperAMP MMIO: trigger interrupt [zone={}, service={}, base={:#x}]",
-        target_zone_id, service_id, base
+    // 串口输出非常慢（~100μs/字符），一行日志约 10-12ms
+    // 生产环境应该禁用日志，调试时可临时启用
+    debug!(
+        "[HyperAMP MMIO]: trigger interrupt [packed={:#x}, zone={}, service={}, base={:#x}]",
+        packed_value, target_zone_id, service_id, base
     );
     
     // 根据 target_zone_id 和 service_id 查找中断号
@@ -67,7 +88,8 @@ pub fn mmio_hyperamp_handler(mmio: &mut MMIOAccess, base: usize) -> HvResult {
     // 直接注入中断（类似 IVC 的实现）
     set_ispender(irq_num / 32, 1 << (irq_num % 32));
     
-    info!("HyperAMP MMIO: interrupt injected [irq={}]", irq_num);
+
+    debug!("[HyperAMP MMIO]: interrupt injected [irq={}]", irq_num);
     
     Ok(())
 }
