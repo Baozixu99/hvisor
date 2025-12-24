@@ -29,8 +29,8 @@ pub const ROOT_ZONE_NAME: &str = "root-linux";
 pub const ROOT_ZONE_MEMORY_REGIONS: [HvConfigMemoryRegion; 8] = [
     HvConfigMemoryRegion {
         mem_type: MEM_TYPE_RAM,
-        physical_start: 0x50000000,
-        virtual_start: 0x50000000,
+        physical_start: 0x70000000,
+        virtual_start: 0x70000000,
         size: 0x80000000,
     }, // ram
     HvConfigMemoryRegion {

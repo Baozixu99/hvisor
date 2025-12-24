@@ -73,6 +73,7 @@ pt_layout_rk3588 = []
 mpidr_rockchip = []
 mpidr_phytium = []
 mpidr_e2000q = []
+imx8mp_ipi = []
 # uart infos
 uart_base_rk3568 = []
 uart_base_rk3588 = []

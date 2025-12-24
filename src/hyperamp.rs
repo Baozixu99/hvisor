@@ -20,14 +20,18 @@
 //! - 新方案：MMIO write → trap → read control → inject_irq (~5-10μs)
 //! - 性能提升：约 5000 倍
 
+use crate::device::irqchip::gicv3::gicd::set_igroup;
+use crate::device::irqchip::gicv3::gicd::set_ipriority;
+use crate::device::irqchip::gicv3::gicd::set_irouter;
+use crate::device::irqchip::gicv3::gicd::set_isenabler;
 use crate::device::irqchip::set_ispender;
 use crate::error::HvResult;
 use crate::memory::MMIOAccess;
-
+use core::ptr::{read_volatile, write_volatile};
 /// HyperAMP MMIO 控制区域偏移定义
-const HYPERAMP_CTRL_IPI_TRIGGER_OFFSET: usize = 0x00;  // ipi_trigger 字段
-const HYPERAMP_CTRL_TARGET_ZONE_OFFSET: usize = 0x04;  // target_zone_id 字段
-const HYPERAMP_CTRL_SERVICE_ID_OFFSET: usize = 0x08;   // service_id 字段
+const HYPERAMP_CTRL_IPI_TRIGGER_OFFSET: usize = 0x00; // ipi_trigger 字段
+const HYPERAMP_CTRL_TARGET_ZONE_OFFSET: usize = 0x04; // target_zone_id 字段
+const HYPERAMP_CTRL_SERVICE_ID_OFFSET: usize = 0x08; // service_id 字段
 
 /// HyperAMP MMIO 处理函数
 ///
@@ -43,14 +47,14 @@ const HYPERAMP_CTRL_SERVICE_ID_OFFSET: usize = 0x08;   // service_id 字段
 pub fn mmio_hyperamp_handler(mmio: &mut MMIOAccess, base: usize) -> HvResult {
     let is_write = mmio.is_write;
     let offset = mmio.address;
-    
+
     // 处理读操作：返回固定值（预热读取不需要真实数据）
     if !is_write {
         // 读取任何字段都返回 0（避免卡住）
         mmio.value = 0;
         return Ok(());
     }
-    
+
     // 只处理写入 ipi_trigger 字段的操作
     if offset != HYPERAMP_CTRL_IPI_TRIGGER_OFFSET {
         // 写入非 ipi_trigger 字段：忽略
@@ -60,37 +64,65 @@ pub fn mmio_hyperamp_handler(mmio: &mut MMIOAccess, base: usize) -> HvResult {
         );
         return Ok(());
     }
-    
+
     // 从 mmio.value 中解包参数（单次写入传递所有信息）
     // 格式：高 16 位为 target_zone_id，低 16 位为 service_id
     let packed_value = mmio.value as u32;
-    
+
     // 预热写入检测：值为 0 时只建立页表，不注入中断
     if packed_value == 0 {
         // 预热成功，跳过中断注入
         debug!("HyperAMP MMIO: warmup write detected [value=0], skipping interrupt injection");
         return Ok(());
     }
-    
+
     let target_zone_id = (packed_value >> 16) & 0xFFFF;
     let service_id = packed_value & 0xFFFF;
-    
+
     // 串口输出非常慢（~100μs/字符），一行日志约 10-12ms
     // 生产环境应该禁用日志，调试时可临时启用
     debug!(
         "[HyperAMP MMIO]: trigger interrupt [packed={:#x}, zone={}, service={}, base={:#x}]",
         packed_value, target_zone_id, service_id, base
     );
-    
+
     // 根据 target_zone_id 和 service_id 查找中断号
     let irq_num = get_irq_by_service(target_zone_id, service_id);
-    
+    if cfg!(feature = "imx8mp_ipi") {
+        if target_zone_id == 1 {
+            // 策略调整：不再去猜具体的 MPIDR，而是使用 "1-of-N" 路由模式
+            // Bit 31 = 1 表示 Interrupt Routing Mode 为 "Any capable PE"
+            // let route_mode_any = 1u64 << 31;
+
+            //直接发送给逻辑CPU为2的CPU核
+            let target_mpidr = 0x02;
+            unsafe {
+                // 1. 中断路由
+
+                //开启 "1-of-N" 模式
+                // GIC 会自动寻找那个 "正在等待这个中断" 的 CPU
+                // set_irouter(irq_num, route_mode_any);
+
+                //直接发送给MPIDR为
+                set_irouter(irq_num, target_mpidr);
+
+                // 2. 分组：Group 1 (Non-Secure)
+                set_igroup(irq_num, 1);
+
+                // 3. 优先级：直接拉满到 0x00 (最高优先级)
+                // 避免 seL4 的 PMR (通常是 0xF0 或 0x80) 把它屏蔽掉
+                set_ipriority(irq_num, 0x00);
+
+                // 4. 物理使能
+                set_isenabler(irq_num);
+            }
+        }
+    }
     // 直接注入中断（类似 IVC 的实现）
     set_ispender(irq_num / 32, 1 << (irq_num % 32));
-    
 
-    debug!("[HyperAMP MMIO]: interrupt injected [irq={}]", irq_num);
-    
+    info!("[HyperAMP MMIO]: interrupt injected [irq={}]", irq_num);
+
     Ok(())
 }
 
@@ -109,13 +141,13 @@ fn get_irq_by_service(target_zone_id: u32, _service_id: u32) -> usize {
     // TODO: 从配置中读取 zone_id + service_id → irq 的映射
     // 当前使用硬编码（临时方案）
     match target_zone_id {
-        1 => 74,  // Zone 1 (NPUcore) 使用 IRQ 74 (SWI1)
+        1 => 74, // Zone 1 (NPUcore) 使用 IRQ 74 (SWI1)
         _ => {
             warn!(
                 "HyperAMP MMIO: no IRQ mapping for zone {}, using default IRQ 74",
                 target_zone_id
             );
-            74  // 默认返回 IRQ 74
+            74 // 默认返回 IRQ 74
         }
     }
 }
