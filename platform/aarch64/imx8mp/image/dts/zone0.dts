@@ -9,6 +9,7 @@
 	model = "Forlinx OK8MPlus-C board";
 
 	aliases {
+		serial0 = "/soc@0/bus@30800000/serial@30860000";
 		serial1 = "/soc@0/bus@30800000/serial@30890000";
 		serial3 = "/soc@0/bus@30800000/serial@30a60000";
 		mmc2 = "/soc@0/bus@30800000/mmc@30b50000";
@@ -1194,27 +1195,27 @@
 			// 	};
 			// };
 
-			//mmc@30b40000 {
-			//	compatible = "fsl,imx8mm-usdhc\0fsl,imx7d-usdhc";
-			//	reg = <0x30b40000 0x10000>;
-			//	interrupts = <0x00 0x16 0x04>;
-			//	clocks = <0x03 0x00 0x03 0x5f 0x03 0x101>;
-			//	clock-names = "ipg\0ahb\0per";
-			//	assigned-clocks = <0x03 0x88>;
-			//	assigned-clock-rates = <0x17d78400>;
-			//	fsl,tuning-start-tap = <0x14>;
-			//	fsl,tuning-step = <0x02>;
-			//	bus-width = <0x04>;
-			//	status = "okay";
-			//	pinctrl-names = "default\0state_100mhz\0state_200mhz";
-			//	pinctrl-0 = <0x40 0x41>;
-			//	pinctrl-1 = <0x42 0x41>;
-			//	pinctrl-2 = <0x43 0x41>;
-			//	non-removable;
-			//	pm-ignore-notify;
-			//	keep-power-in-suspend;
-			//	mmc-pwrseq = <0x44>;
-			//};
+			mmc@30b40000 {
+				compatible = "fsl,imx8mm-usdhc\0fsl,imx7d-usdhc";
+				reg = <0x30b40000 0x10000>;
+				interrupts = <0x00 0x16 0x04>;
+				clocks = <0x03 0x00 0x03 0x5f 0x03 0x101>;
+				clock-names = "ipg\0ahb\0per";
+				assigned-clocks = <0x03 0x88>;
+				assigned-clock-rates = <0x17d78400>;
+				fsl,tuning-start-tap = <0x14>;
+				fsl,tuning-step = <0x02>;
+				bus-width = <0x04>;
+				status = "okay";
+				pinctrl-names = "default\0state_100mhz\0state_200mhz";
+				pinctrl-0 = <0x40 0x41>;
+				pinctrl-1 = <0x42 0x41>;
+				pinctrl-2 = <0x43 0x41>;
+				non-removable;
+				pm-ignore-notify;
+				keep-power-in-suspend;
+				mmc-pwrseq = <0x44>;
+			};
 
 			mmc@30b50000 {
 				compatible = "fsl,imx8mm-usdhc\0fsl,imx7d-usdhc";
@@ -1247,7 +1248,7 @@
 				fsl,tuning-start-tap = <0x14>;
 				fsl,tuning-step = <0x02>;
 				bus-width = <0x08>;
-				status = "disabled";
+				status = "disabled";//使用emmc时需要开启
 				pinctrl-names = "default\0state_100mhz\0state_200mhz";
 				pinctrl-0 = <0x4b>;
 				pinctrl-1 = <0x4c>;
@@ -1267,7 +1268,21 @@
 				pinctrl-names = "default";
 				pinctrl-0 = <0x29>;
 			};
-
+			serial@30860000 {
+				compatible = "fsl,imx8mp-uart\0fsl,imx6q-uart";
+				reg = <0x30860000 0x10000>;
+				interrupts = <0x00 0x1a 0x04>;
+				clocks = <0x03 0xfb 0x03 0xfb>;
+				clock-names = "ipg\0per";
+				dmas = <0x22 0x16 0x04 0x00 0x22 0x17 0x04 0x00>;
+				dma-names = "rx\0tx";
+				status = "okay";
+				pinctrl-names = "default";
+				pinctrl-0 = <0x26>;
+				assigned-clocks = <0x03 0x8e>;
+				assigned-clock-parents = <0x03 0x31>;
+				fsl,uart-has-rtscts;
+				};
 			serial@30890000 {
 				compatible = "fsl,imx8mp-uart\0fsl,imx6q-uart";
 				reg = <0x30890000 0x10000>;
@@ -1281,7 +1296,15 @@
 				assigned-clock-parents = <0x03 0x02>;
 				//clock-frequency = <408000000>;
 			};
-
+			dma-controller@30bd0000 {
+				compatible = "fsl,imx8mq-sdma\0fsl,imx7d-sdma";
+				reg = <0x30bd0000 0x10000>;
+				interrupts = <0x00 0x02 0x04>;
+				clocks = <0x03 0xec 0x03 0x6b>;
+				clock-names = "ipg\0ahb";
+				#dma-cells = <0x03>;
+				fsl,sdma-ram-script-name = "imx/sdma/sdma-imx7d.bin";
+			};
 			ethernet@30be0000 {
 				compatible = "fsl,imx8mm-fec\0fsl,imx8mq-fec\0fsl,imx6sx-fec";
 				reg = <0x30be0000 0x10000>;
@@ -1720,10 +1743,10 @@
 	// };
 
 	chosen {
-		//bootargs = "earlycon console=ttyS0";
-		//bootargs = "earlycon clk_ignore_unused console=ttymxc1,115200 root=/dev/mmcblk1p1 rootwait rw";
-		// now use emmc
-		bootargs = "clk_ignore_unused console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 root=/dev/mmcblk2p1 rootwait rw";
+		//使用SD卡
+		bootargs = "earlycon clk_ignore_unused console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 root=/dev/mmcblk2p1 rootwait rw";
+		// 使用板载eMMC,emmc阶段启用时，会优先从emmc启动。板载emmc中有相关驱动，需要开启mmc@30b60000
+		// bootargs = "clk_ignore_unused console=ttymxc1,115200 earlycon=ec_imx6q,0x30890000,115200 root=/dev/mmcblk3p2 rootwait rw";
 		stdout-path = "/soc@0/bus@30800000/serial@30890000";
 	};
 
