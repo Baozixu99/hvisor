@@ -1,14 +1,14 @@
 {
     "arch": "arm64",
     "name": "FreeRTOS",
-    "zone_id": 1,
+    "zone_id": 2,
     "cpus": [2],
     "memory_regions": [
         {
             "type": "ram",
-            "physical_start": "0xb0000000",
-            "virtual_start":  "0xb0000000",
-            "size": "0x30000000"
+            "physical_start": "0xe0000000",
+            "virtual_start":  "0xe0000000",
+            "size": "0x10000000"
         },
         {
             "type": "io",
@@ -22,12 +22,12 @@
             "virtual_start":  "0x32a10000",
             "size": "0x2000"
         },
-	{
-	   "type": "io",
-	   "physical_start": "0x2800d000",
-	   "virtual_start":  "0x2800d000",
-	   "size": "0x1000"
-	},
+        {
+           "type": "io",
+           "physical_start": "0x2800d000",
+           "virtual_start":  "0x2800d000",
+           "size": "0x1000"
+        },
         {
             "type": "virtio",
             "physical_start": "0xa003c00",
@@ -45,9 +45,9 @@
     "ivc_configs": [],
     "kernel_filepath": "./freertos.bin",
     "dtb_filepath": "./FreeRTOS.dtb",
-    "kernel_load_paddr": "0xb0400000",
-    "dtb_load_paddr":   "0xb0000000",
-    "entry_point":      "0xb0400000",
+    "kernel_load_paddr": "0xe0400000",
+    "dtb_load_paddr":   "0xe0000000",
+    "entry_point":      "0xe0400000",
     "arch_config": {
             "gic_version": "v3",
             "gicd_base": "0x30800000",
@@ -58,4 +58,3 @@
             "gits_size": "0x0"
     }
 }
-
