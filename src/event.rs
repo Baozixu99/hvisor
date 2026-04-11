@@ -153,12 +153,12 @@ pub fn check_events() -> bool {
             true
         }
         Some(IPI_EVENT_SHM_SIGNAL) => {
-            info!("cpu {} received shm signal", cpu_data.id);
+            debug!("cpu {} received shm signal", cpu_data.id);
             // Inject a specific interrupt to the current zone for SHM signaling
             // You can customize the interrupt number based on your needs
             const SHM_SIGNAL_IRQ: usize = 32 + 0x2a;
             inject_irq(SHM_SIGNAL_IRQ, false);
-            info!("cpu {} injected SHM signal IRQ {}", cpu_data.id, SHM_SIGNAL_IRQ);
+            debug!("cpu {} injected SHM signal IRQ {}", cpu_data.id, SHM_SIGNAL_IRQ);
             true
         }
         _ => false,
