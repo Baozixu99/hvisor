@@ -460,21 +460,11 @@
 		};
 
 		hdmimix-pd {
-			compatible = "fsl,imx8m-pm-domain";
-			#power-domain-cells = <0x00>;
-			domain-index = <0x11>;
-			domain-name = "hdmimix";
-			clocks = <0x03 0x116 0x03 0x63 0x03 0xa8>;
-			phandle = <0x10>;
+			status = "disabled";
 		};
 
 		hdmiphy-pd {
-			compatible = "fsl,imx8m-pm-domain";
-			#power-domain-cells = <0x00>;
-			domain-index = <0x12>;
-			domain-name = "hdmi_phy";
-			parent-domains = <0x10>;
-			phandle = <0x6f>;
+			status = "disabled";
 		};
 	};
 
@@ -1525,129 +1515,140 @@
 			};
 			
 			hdmi-blk@32fc0000 {
-				compatible = "syscon";
-				reg = <0x32fc0000 0x1000>;
-				phandle = <0x6e>;
+				status = "disabled";
 			};
 
 			hdmimix@32fc0000 {
-				compatible = "fsl,imx8mp-audiomix\0fsl,imx8mp-hdmimix";
-				reg = <0x32fc0000 0x1000>;
-
-				clock-controller {
-					compatible = "fsl,imx8mp-hdmimix-clk";
-					#clock-cells = <0x01>;
-					clocks = <0x03 0x00>;
-					clock-names = "dummy";
-					status = "okay";
-					phandle = <0x69>;
-				};
-
-				reset-controller {
-					compatible = "fsl,imx8mp-hdmimix-reset";
-					#reset-cells = <0x01>;
-					status = "okay";
-					phandle = <0x6a>;
-				};
+				status = "disabled";
 			};
-			// hdmi 用到的中断控制器
+			// hdmi 用到的中断控制器 - disabled for zone0
 			irqsteer@32fc2000 {
-				compatible = "fsl,imx-irqsteer";
-				reg = <0x32fc2000 0x1000>;
-				interrupts = <0x00 0x2b 0x04>;
-				interrupt-controller;
-				interrupt-parent = <0x01>;
-				#interrupt-cells = <0x01>;
-				fsl,channel = <0x01>;
-				fsl,num-irqs = <0x40>;
-				clocks = <0x69 0x06>;
-				clock-names = "ipg";
-				assigned-clocks = <0x03 0x63>;
-				assigned-clock-parents = <0x03 0x38>;
-				assigned-clock-rates = <0xbebc200>;
-				resets = <0x6a 0x05>;
-				status = "okay";
-				phandle = <0x6c>;
+				status = "disabled";
 			};
 
 			hdmi-pai-pvi@32fc4000 {
-				compatible = "fsl,imx8mp-hdmi-pavi";
-				reg = <0x32fc4000 0x1000>;
-				clocks = <0x69 0x20 0x69 0x17>;
-				clock-names = "pvi_clk\0pai_clk";
-				resets = <0x6a 0x02 0x6a 0x03>;
-				reset-names = "pai_rst\0pvi_rst";
-				status = "okay";
+				status = "disabled";
 			};
 
 			lcd-controller@32fc6000 {
-				#address-cells = <0x01>;
-				#size-cells = <0x00>;
-				compatible = "fsl,imx8mp-lcdif3";
-				reg = <0x32fc6000 0x10000>;
-				clocks = <0x6b 0x00 0x03 0x64 0x03 0x63 0x69 0x00 0x69 0x01 0x69 0x03 0x69 0x05 0x69 0x09 0x69 0x0a 0x69 0x0b 0x69 0x0c 0x69 0x0d 0x69 0x07>;
-				clock-names = "pix\0disp-axi\0disp-apb\0mix_apb\0mix_axi\0xtl_24m\0mix_pix\0lcdif_apb\0lcdif_axi\0lcdif_pdi\0lcdif_pix\0lcdif_spu\0noc_hdmi";
-				assigned-clocks = <0x03 0x64 0x03 0x63>;
-				assigned-clock-parents = <0x03 0x40 0x03 0x38>;
-				assigned-clock-rates = <0x1dcd6500 0xbebc200>;
-				interrupts = <0x08 0x04>;
-				interrupt-parent = <0x6c>;
-				resets = <0x6a 0x07>;
-				power-domains = <0x10>;
-				status = "okay";
-				thres-low = <0x01 0x02>;
-				thres-high = <0x03 0x04>;
-
-				port@0 {
-					reg = <0x00>;
-					phandle = <0x8c>;
-
-					endpoint {
-						remote-endpoint = <0x6d>;
-						phandle = <0x70>;
-					};
-				};
+				status = "disabled";
 			};
 
 			hdmi@32fd8000 {
-				compatible = "fsl,imx8mp-hdmi";
-				reg = <0x32fd8000 0x7eff>;
-				// 0x00表示它连到中断控制器的第0个引脚，该中断控制器是irqsteer，它连到GIC中断线代表32+0x2b号中断。因此hdmi发出中断，CPU收到的就是32+0x2b
-				interrupts = <0x00 0x04>; 
-				interrupt-parent = <0x6c>;
-				clocks = <0x03 0x63 0x03 0xa7 0x69 0x1d 0x69 0x1b 0x69 0x1a 0x69 0x19 0x69 0x18 0x69 0x15 0x69 0x14 0x69 0x13 0x69 0x0e 0x69 0x24>;
-				clock-names = "iahb\0isfr\0phy_int\0prep_clk\0skp_clk\0sfr_clk\0pix_clk\0cec_clk\0apb_clk\0hpi_clk\0fdcc_ref\0pipe_clk";
-				assigned-clocks = <0x03 0x63 0x03 0x64 0x03 0xa7>;
-				assigned-clock-parents = <0x03 0x38 0x03 0x40 0x03 0x02>;
-				assigned-clock-rates = <0xbebc200 0x1dcd6500 0x16e3600>;
-				phys = <0x6b>;
-				phy-names = "hdmi";
-				resets = <0x6a 0x00>;
-				gpr = <0x6e>;
-				power-domains = <0x6f>;
-				status = "okay";
-
-				port@0 {
-
-					endpoint {
-						remote-endpoint = <0x70>;
-						phandle = <0x6d>;
-					};
-				};
+				status = "disabled";
 			};
 
 			hdmiphy@32fdff00 {
-				compatible = "fsl,samsung-hdmi-phy";
-				reg = <0x32fdff00 0x100>;
-				#clock-cells = <0x01>;
-				clocks = <0x69 0x1c 0x69 0x03>;
-				clock-names = "apb\0ref";
-				clock-output-names = "hdmi_phy";
-				#phy-cells = <0x00>;
-				resets = <0x6a 0x01>;
-				status = "okay";
-				phandle = <0x6b>;
+				status = "disabled";
 			};
+		};
+	};
+
+	pcie-phy@32f00000 {
+		compatible = "fsl,imx8mp-pcie-phy";
+		reg = <0x00 0x32f00000 0x00 0x10000>;
+		clocks = <0x03 0x77>;
+		clock-names = "phy";
+		assigned-clocks = <0x03 0x77>;
+		assigned-clock-parents = <0x03 0x02>;
+		#phy-cells = <0x00>;
+		status = "okay";
+		ext_osc = <0x01>;
+		phandle = <0x7a>;
+	};
+
+	hsio-mix@32f10000 {
+		compatible = "fsl,imx8mp-hsio-mix";
+		reg = <0x00 0x32f10000 0x00 0x08>;
+		phandle = <0x7b>;
+	};
+
+	usb-phy@381f0040 {
+		compatible = "fsl,imx8mp-usb-phy";
+		reg = <0x00 0x381f0040 0x00 0x40>;
+		clocks = <0x03 0x100>;
+		clock-names = "phy";
+		assigned-clocks = <0x03 0x93>;
+		assigned-clock-parents = <0x03 0x02>;
+		#phy-cells = <0x00>;
+		status = "okay";
+		fsl,phy-tx-vref-tune = <0x06>;
+		fsl,phy-tx-rise-tune = <0x00>;
+		fsl,phy-tx-preemp-amp-tune = <0x03>;
+		fsl,phy-comp-dis-tune = <0x07>;
+		fsl,pcs-tx-deemph-3p5db = <0x21>;
+		fsl,phy-pcs-tx-swing-full = <0x7f>;
+		phandle = <0x80>;
+	};
+
+	usb@32f10100 {
+		compatible = "fsl,imx8mp-dwc3";
+		reg = <0x00 0x32f10100 0x00 0x08>;
+		clocks = <0x03 0x10c 0x03 0xff>;
+		clock-names = "hsio\0suspend";
+		interrupts = <0x00 0x94 0x04>;
+		power-domains = <0x0c>;
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+		status = "okay";
+
+		dwc3@38100000 {
+			compatible = "snps,dwc3";
+			reg = <0x00 0x38100000 0x00 0x10000>;
+			clocks = <0x03 0x5b 0x03 0x92 0x03 0xff>;
+			clock-names = "bus_early\0ref\0suspend";
+			assigned-clocks = <0x03 0x49>;
+			assigned-clock-parents = <0x03 0x40>;
+			assigned-clock-rates = <0x1dcd6500>;
+			interrupts = <0x00 0x28 0x04>;
+			phys = <0x80 0x80>;
+			phy-names = "usb2-phy\0usb3-phy";
+			snps,dis-u2-freeclk-exists-quirk;
+			status = "okay";
+			dr_mode = "host";
+		};
+	};
+
+	usb-phy@382f0040 {
+		compatible = "fsl,imx8mp-usb-phy";
+		reg = <0x00 0x382f0040 0x00 0x40>;
+		clocks = <0x03 0x100>;
+		clock-names = "phy";
+		assigned-clocks = <0x03 0x93>;
+		assigned-clock-parents = <0x03 0x02>;
+		#phy-cells = <0x00>;
+		status = "okay";
+		fsl,phy-tx-preemp-amp-tune = <0x02>;
+		phandle = <0x82>;
+	};
+
+	usb@32f10108 {
+		compatible = "fsl,imx8mp-dwc3";
+		reg = <0x00 0x32f10108 0x00 0x08>;
+		clocks = <0x03 0x10c 0x03 0xff>;
+		clock-names = "hsio\0suspend";
+		interrupts = <0x00 0x95 0x04>;
+		power-domains = <0x0c>;
+		#address-cells = <0x02>;
+		#size-cells = <0x02>;
+		ranges;
+		status = "okay";
+
+		dwc3@38200000 {
+			compatible = "snps,dwc3";
+			reg = <0x00 0x38200000 0x00 0x10000>;
+			clocks = <0x03 0x5b 0x03 0x92 0x03 0xff>;
+			clock-names = "bus_early\0ref\0suspend";
+			assigned-clocks = <0x03 0x49>;
+			assigned-clock-parents = <0x03 0x40>;
+			assigned-clock-rates = <0x1dcd6500>;
+			interrupts = <0x00 0x29 0x04>;
+			phys = <0x82 0x82>;
+			phy-names = "usb2-phy\0usb3-phy";
+			snps,dis-u2-freeclk-exists-quirk;
+			status = "okay";
+			dr_mode = "host";
 		};
 	};
 
